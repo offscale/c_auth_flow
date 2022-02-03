@@ -19,6 +19,7 @@ target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:include>"
 )
 
@@ -114,6 +115,7 @@ target_include_directories(
         "${LIBRARY_NAME}"
         PRIVATE
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/configure>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:include>"
 )
 
