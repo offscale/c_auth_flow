@@ -16,10 +16,10 @@ extern "C" {
 extern CAUTHFLOW_OAUTH2_EXPORT const char responseOk[];
 extern CAUTHFLOW_OAUTH2_EXPORT const char responseErr[];
 
-// This is a specialised web server type functionality
-// that waits on IBM to call us back.
-// This is doing what startHttpServer is doing
-// in PHP.
+/* This is a specialised web server type functionality
+   that waits on IBM to call us back.
+   This is doing what startHttpServer is doing
+   in PHP. */
 struct AuthenticationResponse {
     const char *raw, *secret, *code;
 };

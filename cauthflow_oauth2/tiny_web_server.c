@@ -121,7 +121,7 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
    struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    // Initialize Winsock
+    /* Initialize Winsock */
     int iResult;
     WSADATA wsaData;
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -190,7 +190,7 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
             continue;
         }
 
-        // keep on reading until we have digest everything
+        /* keep on reading until we have digest everything */
         incoming_datastream = (char *)(malloc(STACK_SIZE * sizeof(char)));
 
 
@@ -209,8 +209,8 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
 #else
                 strcat(incoming_datastream, buffer);
 #endif
-                // if we do not fill up our buffer then we have
-                // got the whole message
+                /* if we do not fill up our buffer then we have
+                   got the whole message */
                 if ( bytes < sizeof(buffer) ) {
                     break;
                 }
@@ -225,7 +225,7 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
         }
 #endif
 
-        // check if this is a GET method
+        /* check if this is a GET method */
         if ( incoming_datastream[2] != 'G' ||
              incoming_datastream[3] != 'E' ||
              incoming_datastream[4] != 'T' ) {

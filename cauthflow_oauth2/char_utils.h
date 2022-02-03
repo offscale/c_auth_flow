@@ -45,7 +45,7 @@ extern CAUTHFLOW_OAUTH2_EXPORT bool is_unreserved(char);
 
 extern CAUTHFLOW_OAUTH2_EXPORT bool is_pchar(char);
 
-// See the RFC 3986.
+/* See the RFC 3986. */
 extern CAUTHFLOW_OAUTH2_EXPORT bool is_fragment(char);
 
 extern CAUTHFLOW_OAUTH2_EXPORT bool is_valid_path_char(char);

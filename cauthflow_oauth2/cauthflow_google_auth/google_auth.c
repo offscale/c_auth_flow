@@ -138,8 +138,8 @@ inline struct StrStr auth_flow_user_approval() {
         curl_free(url);
     }
 
-    // we then need to start our web server and block
-    // until we get the appropriate response
+    /* we then need to start our web server and block
+       until we get the appropriate response */
     {
         const struct AuthenticationResponse oauth_response = wait_for_oauth2_redirect();
 

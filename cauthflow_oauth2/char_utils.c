@@ -76,7 +76,7 @@ inline bool is_pchar(const char ch) {
     return ch == ':' || ch == '@' || is_unreserved(ch) || is_pct_encoded(ch) || is_sub_delims(ch);
 }
 
-// See the RFC 3986.
+/* See the RFC 3986. */
 inline bool is_fragment(const char ch) {
     return ch == '/' || ch == '?' || is_pchar(ch);
 }
