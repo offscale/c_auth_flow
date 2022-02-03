@@ -154,4 +154,4 @@ endif ()
 install(TARGETS ${installable_libs}
         DESTINATION "${INSTALL_DEST}"
         EXPORT "${LIBRARY_NAME}Targets")
-install(FILES "${_export_file}" "logger.h" "${PROJECT_BINARY_DIR}/configure/configure.h" DESTINATION "include")
+install(FILES "${_export_file}" "${PROJECT_BINARY_DIR}/configure/configure.h" DESTINATION "include")
