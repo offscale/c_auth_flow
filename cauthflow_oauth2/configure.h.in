@@ -1,0 +1,29 @@
+#ifndef CAUTHFLOW_CONFIG_H
+#define CAUTHFLOW_CONFIG_H
+
+#define PROJECT_NAME                 "@PROJECT_NAME@"
+#define PROJECT_VERSION              "@cauthflow_VERSION@"
+
+#define STACK_SIZE                   @STACK_SIZE@
+
+#define _@TARGET_ARCH@_
+
+/* https://github.com/abseil/abseil-cpp/pull/705 until merge */
+#define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+
+/* this is what we would define in our authentication settings in App ID */
+#define SERVER_ADDR                  "@SERVER_ADDR@"
+#define SERVER_HOST                  "@SERVER_HOST@"
+#define PORT_TO_BIND                 @PORT_TO_BIND@
+#define PORT_TO_BIND_S               "@PORT_TO_BIND@"
+#define MSG_BACKLOG                  @MSG_BACKLOG@
+#define EXPECTED_PATH                "@EXPECTED_PATH@"
+
+#define API_HOST                      "@API_HOST@"
+#define API_APPLICATION_ENDPOINT_PATH "@API_APPLICATION_ENDPOINT_PATH@"
+#define API_GET_ACCESS_TOKEN_PATH     "@API_GET_ACCESS_TOKEN_PATH@"
+
+#define CLIENT_ID                     "@CLIENT_ID@"
+#define CLIENT_SECRET                 "@CLIENT_SECRET@"
+
+#endif /* CAUTHFLOW_CONFIG_H */
