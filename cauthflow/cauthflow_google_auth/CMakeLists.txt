@@ -11,11 +11,6 @@ source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
-set(_libs
-        "libcurl_simple_https"
-        "common"
-        "oauth2")
-
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
@@ -40,13 +35,8 @@ set(_pub_libs "${PROJECT_NAME}_compiler_flags" "cauthflow_utils" "cauthflow_oaut
 if (APPLE)
   list(APPEND _pub_libs "-framework CoreServices")
 endif ()
-if (NOT _GNU_SOURCE AND NOT HAVE_ASPRINTF)
-  list(APPEND _libs "morestd")
-endif (NOT _GNU_SOURCE AND NOT HAVE_ASPRINTF)
 
-target_link_libraries("${LIBRARY_NAME}" PRIVATE "${_libs}")
-
-target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_pub_libs}")
+target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_pub_libs}" "libcurl_simple_https" "${PROJECT_NAME}")
 
 set_target_properties(
         "${LIBRARY_NAME}"

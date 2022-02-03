@@ -4,7 +4,7 @@
 /**
  * OAuth2 in C/C++
  * Tested for Google auth, following this guide:
- * https://developers.google.com/identity/protocols/cauthflow_oauth2/native-app
+ * https://developers.google.com/identity/protocols/cauthflow/native-app
  */
 
 #ifdef	__cplusplus

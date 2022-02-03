@@ -42,8 +42,8 @@ configure_file(
         "${PROJECT_NAME}Config.h"
 )
 
-add_subdirectory("cauthflow_utils")
-add_subdirectory("cauthflow_oauth2")
+add_subdirectory("${PROJECT_NAME}_utils")
+add_subdirectory("${PROJECT_NAME}")
 
 install(
         FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.h"

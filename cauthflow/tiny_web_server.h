@@ -11,10 +11,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <string.h>
-#include "cauthflow_oauth2_export.h"
+#include "cauthflow_export.h"
 
-extern CAUTHFLOW_OAUTH2_EXPORT const char responseOk[];
-extern CAUTHFLOW_OAUTH2_EXPORT const char responseErr[];
+extern CAUTHFLOW_EXPORT const char responseOk[];
+extern CAUTHFLOW_EXPORT const char responseErr[];
 
 /* This is a specialised web server type functionality
    that waits on IBM to call us back.
@@ -24,10 +24,10 @@ struct AuthenticationResponse {
     const char *raw, *secret, *code;
 };
 
-extern CAUTHFLOW_OAUTH2_EXPORT void split_querystring(const char*);
+extern CAUTHFLOW_EXPORT void split_querystring(const char*);
 
 
-extern CAUTHFLOW_OAUTH2_EXPORT struct AuthenticationResponse wait_for_oauth2_redirect();
+extern CAUTHFLOW_EXPORT struct AuthenticationResponse wait_for_oauth2_redirect();
 
 #ifdef	__cplusplus
 }

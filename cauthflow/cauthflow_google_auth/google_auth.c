@@ -1,7 +1,7 @@
 /**
  * OAuth2 in C/C++
  * Tested for Google auth, following this guide:
- * https://developers.google.com/identity/protocols/cauthflow_oauth2/native-app
+ * https://developers.google.com/identity/protocols/cauthflow/native-app
  */
 
 #define XSTR(s) STR(s)
@@ -125,7 +125,7 @@ inline struct StrStr auth_flow_user_approval() {
     char *url;
     rc = curl_url_set(urlp, CURLUPART_HOST, "accounts.google.com", 0);
     rc = curl_url_set(urlp, CURLUPART_PORT, "443", 0);
-    rc = curl_url_set(urlp, CURLUPART_PATH, "/o/cauthflow_oauth2/v2/auth", 0);
+    rc = curl_url_set(urlp, CURLUPART_PATH, "/o/cauthflow/v2/auth", 0);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "response_type=code&access_type=offline", 0);
     rc = append_curl_query(urlp, "state=%s", temporary_secret_state);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "client_id=" CLIENT_ID, CURLU_APPENDQUERY);
@@ -144,7 +144,7 @@ inline struct StrStr auth_flow_user_approval() {
         const struct AuthenticationResponse oauth_response = wait_for_oauth2_redirect();
 
         if (strcmp(oauth_response.secret, temporary_secret_state) != 0) {
-            fprintf(stderr, "cauthflow_oauth2 redirect contained the wrong secret state (%s), expected: (%s)\n",
+            fprintf(stderr, "cauthflow redirect contained the wrong secret state (%s), expected: (%s)\n",
                     oauth_response.secret, temporary_secret_state);
             exit(EXIT_FAILURE);
         }
