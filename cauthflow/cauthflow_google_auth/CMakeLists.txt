@@ -58,6 +58,6 @@ if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "${INSTALL_DEST}"
+        DESTINATION "lib"
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" ${Header_Files} DESTINATION "include")
