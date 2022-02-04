@@ -26,7 +26,7 @@
 #include <randomstr.h>
 #include <open_browser.h>
 #include <tiny_web_server.h>
-#include <configure.h>
+#include <cauthflow_configure.h>
 
 #include <c89stringutils_string_extras.h>
 

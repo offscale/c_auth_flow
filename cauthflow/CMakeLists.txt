@@ -2,7 +2,6 @@ get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
 set(Header_Files
-        "char_utils.h"
         "macros.h"
         "open_browser.h"
         "tiny_web_server.h"
@@ -10,7 +9,7 @@ set(Header_Files
 
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "char_utils.c" "tiny_web_server.c")
+set(Source_Files "tiny_web_server.c")
 source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
@@ -103,13 +102,18 @@ endif ()
 # Configure file (interpolate) #
 ################################
 
-configure_file("configure.h.in" "${PROJECT_BINARY_DIR}/configure/configure.h" @ONLY)
+configure_file("configure.h.in" "${CMAKE_CURRENT_BINARY_DIR}/cauthflow_configure.h" @ONLY)
 
 ###########
 # Linkage #
 ###########
 
-target_link_libraries("${LIBRARY_NAME}" PUBLIC "cauthflow_utils" "${PROJECT_NAME}_compiler_flags")
+target_link_libraries(
+        "${LIBRARY_NAME}"
+        PRIVATE
+        "cauthflow_utils"
+        "${PROJECT_NAME}_compiler_flags"
+)
 
 target_include_directories(
         "${LIBRARY_NAME}"
@@ -121,7 +125,7 @@ target_include_directories(
 
 add_subdirectory("cauthflow_google_auth")  # for export
 target_link_libraries("${LIBRARY_NAME}" PRIVATE "cauthflow_utils")
-#target_link_libraries("${LIBRARY_NAME}" PUBLIC "cauthflow_google_auth")
+#target_link_libraries("${LIBRARY_NAME}" PRIVATE "cauthflow_google_auth")
 
 set_target_properties(
         "${LIBRARY_NAME}"
@@ -147,12 +151,13 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 ###########
 
 # install rules
-set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags" "cauthflow_google_auth")
+set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif ()
 install(TARGETS ${installable_libs}
         DESTINATION "lib"
         EXPORT "${LIBRARY_NAME}Targets")
-install(FILES "${_export_file}" "${PROJECT_BINARY_DIR}/configure/configure.h" ${Header_Files}
+install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/cauthflow_configure.h" ${Header_Files}
         DESTINATION "include")
+install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${PROJECT_NAME}")

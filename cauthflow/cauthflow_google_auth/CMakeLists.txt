@@ -1,8 +1,6 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
-include(GenerateExportHeader)
-
 set(Header_Files "google_auth.h")
 source_group("Header Files" FILES "${Header_Files}")
 
@@ -13,7 +11,7 @@ add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source
 
 target_include_directories(
         "${LIBRARY_NAME}"
-        PUBLIC
+        PRIVATE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/configure>"
@@ -31,12 +29,19 @@ target_include_directories(
 )
 
 find_package(unofficial-parson CONFIG REQUIRED)
-set(_pub_libs "${PROJECT_NAME}_compiler_flags" "cauthflow_utils" "cauthflow_oauth2" "unofficial::parson::parson")
+set(_libs "unofficial::parson::parson")
 if (APPLE)
-  list(APPEND _pub_libs "-framework CoreServices")
-endif ()
+  list(APPEND _libs "-framework CoreServices")
+endif (APPLE)
 
-target_link_libraries("${LIBRARY_NAME}" PUBLIC "${_pub_libs}" "libcurl_simple_https" "${PROJECT_NAME}")
+target_link_libraries("${LIBRARY_NAME}" PRIVATE "${_libs}")
+target_link_libraries(
+        "${LIBRARY_NAME}"
+        PRIVATE
+        "libcurl_simple_https"
+        "${PROJECT_NAME}_utils"
+        "${PROJECT_NAME}"
+)
 
 set_target_properties(
         "${LIBRARY_NAME}"
@@ -45,6 +50,7 @@ set_target_properties(
         C
 )
 
+include(GenerateExportHeader)
 set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}_export.h")
 generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
@@ -53,7 +59,7 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
-set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")
+set(installable_libs "${LIBRARY_NAME}")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
@@ -61,3 +67,4 @@ install(TARGETS ${installable_libs}
         DESTINATION "lib"
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" ${Header_Files} DESTINATION "include")
+install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${PROJECT_NAME}")

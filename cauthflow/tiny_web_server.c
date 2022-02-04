@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <configure.h>
+#include <cauthflow_configure.h>
 #include "tiny_web_server.h"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
