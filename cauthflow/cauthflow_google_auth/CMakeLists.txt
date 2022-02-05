@@ -27,7 +27,7 @@ target_include_directories(
         "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
 )
 
-find_package(libcurl-simple-https CONFIG REQUIRED)
+# find_package(libcurl-simple-https CONFIG REQUIRED)
 find_package(unofficial-parson CONFIG REQUIRED)
 set(_libs "unofficial::parson::parson")
 if (APPLE)
