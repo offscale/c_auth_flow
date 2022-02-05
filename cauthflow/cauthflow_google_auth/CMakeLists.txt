@@ -19,7 +19,6 @@ target_include_directories(
 )
 
 find_path(RANDOMSTR_INCLUDE_DIRS "randomstr.h")
-find_path(LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS "curl_simple_https.h")
 
 target_include_directories(
         "${LIBRARY_NAME}"
@@ -28,6 +27,7 @@ target_include_directories(
         "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
 )
 
+find_package(libcurl-simple-https CONFIG REQUIRED)
 find_package(unofficial-parson CONFIG REQUIRED)
 set(_libs "unofficial::parson::parson")
 if (APPLE)
@@ -38,7 +38,8 @@ target_link_libraries("${LIBRARY_NAME}" PRIVATE "${_libs}")
 target_link_libraries(
         "${LIBRARY_NAME}"
         PRIVATE
-        "libcurl_simple_https"
+        "${_libs}"
+        "libcurl-simple-https"
         "${PROJECT_NAME}_utils"
         "${PROJECT_NAME}"
 )

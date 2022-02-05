@@ -3,7 +3,6 @@
   "version-string": "0.0.1",
   "dependencies": [
     "c89stringutils",
-    "curl",
     "libcurl-simple-https",
     "parson",
     "randomstr"

@@ -17,14 +17,6 @@ target_link_libraries(
         "unofficial::parson::parson"
 )
 
-find_path(LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS "curl_simple_https.h")
-
-target_include_directories(
-        "${LIBRARY_NAME}"
-        PRIVATE
-        "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
-)
-
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
