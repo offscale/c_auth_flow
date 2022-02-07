@@ -45,4 +45,4 @@ install(TARGETS ${installable_libs}
         DESTINATION "lib"
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES ${Header_Files} "${_export_file}" DESTINATION "include")
-install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${PROJECT_NAME}")
+install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")
