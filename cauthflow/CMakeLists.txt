@@ -160,4 +160,4 @@ install(TARGETS ${installable_libs}
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/cauthflow_configure.h" ${Header_Files}
         DESTINATION "include")
-install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${PROJECT_NAME}")
+install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")
