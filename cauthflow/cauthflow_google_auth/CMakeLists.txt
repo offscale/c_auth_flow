@@ -18,6 +18,20 @@ target_include_directories(
         "$<INSTALL_INTERFACE:include>"
 )
 
+if (MSVC)
+  find_package(CURL CONFIG REQUIRED)
+  set(CURL_LINK_LIBRARIES CURL::libcurl)
+else ()
+  include(${CMAKE_SOURCE_DIR}/cmake/modules/FindCurlCustom.cmake)
+  get_curl(CURL_LINK_LIBRARIES)
+endif ()
+
+target_link_libraries(
+        "${LIBRARY_NAME}"
+        PUBLIC
+        "${CURL_LINK_LIBRARIES}"
+)
+
 find_path(RANDOMSTR_INCLUDE_DIRS "randomstr.h")
 
 target_include_directories(
@@ -27,7 +41,7 @@ target_include_directories(
         "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
 )
 
-# find_package(libcurl-simple-https CONFIG REQUIRED)
+find_package(libcurl-simple-https CONFIG REQUIRED)
 find_package(unofficial-parson CONFIG REQUIRED)
 set(_libs "unofficial::parson::parson")
 if (APPLE)
