@@ -37,12 +37,4 @@ set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}_export.h")
 generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
 # install rules
-set(installable_libs "${LIBRARY_NAME}")
-if (TARGET "${DEPENDANT_LIBRARY}")
-    list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif (TARGET "${DEPENDANT_LIBRARY}")
-install(TARGETS ${installable_libs}
-        DESTINATION "lib"
-        EXPORT "${LIBRARY_NAME}Targets")
 install(FILES ${Header_Files} "${_export_file}" DESTINATION "include")
-install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")
