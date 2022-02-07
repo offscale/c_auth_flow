@@ -123,8 +123,8 @@ target_include_directories(
         "$<INSTALL_INTERFACE:include>"
 )
 
-add_subdirectory("cauthflow_google_auth")  # for export
-target_link_libraries("${LIBRARY_NAME}" PRIVATE "cauthflow_utils")
+add_subdirectory("${PROJECT_NAME}_google_auth")  # for export
+target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_utils")
 #target_link_libraries("${LIBRARY_NAME}" PRIVATE "cauthflow_google_auth")
 
 set_target_properties(
@@ -151,7 +151,8 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 ###########
 
 # install rules
-set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags" "${PROJECT_NAME}_utils")
+set(installable_libs
+        "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags" "${PROJECT_NAME}_utils" "${PROJECT_NAME}_google_auth")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
