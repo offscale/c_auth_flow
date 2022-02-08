@@ -156,12 +156,15 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
 set(installable_libs
-        "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags" "${PROJECT_NAME}_utils" "${PROJECT_NAME}_google_auth")
+        "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags"
+        "${PROJECT_NAME}_utils" "${PROJECT_NAME}_google_auth")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "${INSTALL_LIB_DESTINATION}"
+        RUNTIME DESTINATION "bin"
+        LIBRARY DESTINATION "lib"
+        ARCHIVE DESTINATION "lib"
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" ${Header_Files}
         DESTINATION "include")

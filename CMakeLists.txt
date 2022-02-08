@@ -15,12 +15,12 @@ endif ()
 
 # control where the static and shared libraries are built so that on windows
 # we don't need to tinker with the path to run the executable
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 if (NOT DEFINED CMAKE_BUILD_TYPE)
-    if (DEFINED CMAKE_RC_FLAGS_RELEASE)
+    if (CMAKE_RC_FLAGS_RELEASE)
         set(CMAKE_BUILD_TYPE "Release")
     else ()
         set(CMAKE_BUILD_TYPE "Debug")
