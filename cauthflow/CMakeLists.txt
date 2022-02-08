@@ -162,12 +162,12 @@ if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "${INSTALL_LIB_DESTINATION}"
+        DESTINATION "${INSTALL_LIB_PREFIX}lib"
         EXPORT "${LIBRARY_NAME}Targets")
 install(TARGETS ${installable_libs}
-        RUNTIME DESTINATION "bin"
-        LIBRARY DESTINATION "lib"
-        ARCHIVE DESTINATION "lib")
+        RUNTIME DESTINATION "${INSTALL_LIB_PREFIX}bin"
+        LIBRARY DESTINATION "${INSTALL_LIB_PREFIX}lib"
+        ARCHIVE DESTINATION "${INSTALL_LIB_PREFIX}lib")
 install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" ${Header_Files}
         DESTINATION "include")
 install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")
