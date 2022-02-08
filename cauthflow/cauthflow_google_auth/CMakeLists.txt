@@ -11,7 +11,7 @@ add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source
 
 target_include_directories(
         "${LIBRARY_NAME}"
-        PRIVATE
+        PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/configure>"
@@ -48,7 +48,6 @@ if (APPLE)
   list(APPEND _libs "-framework CoreServices")
 endif (APPLE)
 
-target_link_libraries("${LIBRARY_NAME}" PRIVATE "${_libs}")
 target_link_libraries(
         "${LIBRARY_NAME}"
         PRIVATE

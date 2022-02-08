@@ -45,6 +45,11 @@ configure_file(
 add_subdirectory("${PROJECT_NAME}_utils")
 add_subdirectory("${PROJECT_NAME}")
 
+include(CTest)
+if (BUILD_TESTING)
+    add_subdirectory("${PROJECT_NAME}_tests")
+endif (BUILD_TESTING)
+
 install(
         FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.h"
         DESTINATION "include"
