@@ -16,6 +16,7 @@ typedef unsigned long num_type;
 #endif /* _MSC_VER */
 
 TEST x_is_directory_should_be_true(void) {
+    /* TODO: Actually test things */
     get_google_auth(CLIENT_ID, CLIENT_SECRET,  /*refresh_token*/ NULL);
     ASSERT_EQ(0, 0);
     PASS();

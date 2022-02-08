@@ -23,15 +23,24 @@
 #include <parson.h>
 
 #include <json_common.h>
+#define RANDOMSTR_IMPLEMENTATION
 #include <randomstr.h>
+#undef RANDOMSTR_IMPLEMENTATION
+
+#define C89STRINGUTILS_IMPLEMENTATION
+#include <c89stringutils_string_extras.h>
+#undef C89STRINGUTILS_IMPLEMENTATION
+
 #include <open_browser.h>
 #include <tiny_web_server.h>
-#include <cauthflow_configure.h>
 
-#include <c89stringutils_string_extras.h>
+
+
+#include <curl_simple_https.h>
 
 #include "google_auth.h"
-#include <curl_simple_https.h>
+#include <cauthflow_configure.h>
+
 #include <stdarg.h>
 #include <stdlib.h>
 

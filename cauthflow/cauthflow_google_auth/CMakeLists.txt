@@ -33,12 +33,14 @@ target_link_libraries(
 )
 
 find_path(RANDOMSTR_INCLUDE_DIRS "randomstr.h")
+find_path(C89STRINGUTILS_INCLUDE_DIRS "c89stringutils_string_extras.h")
 
 target_include_directories(
         "${LIBRARY_NAME}"
         PRIVATE
         "${RANDOMSTR_INCLUDE_DIRS}"
         "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
+        "${C89STRINGUTILS_INCLUDE_DIRS}"
 )
 
 find_package(libcurl-simple-https CONFIG REQUIRED)
