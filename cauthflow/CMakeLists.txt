@@ -127,6 +127,10 @@ add_subdirectory("${PROJECT_NAME}_google_auth")  # for export
 target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_utils")
 #target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_google_auth")
 
+if (WIN32)
+  target_link_libraries("${LIBRARY_NAME}" PUBLIC wsock32 ws2_32)
+endif (WIN32)
+
 set_target_properties(
         "${LIBRARY_NAME}"
         PROPERTIES
