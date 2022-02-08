@@ -18,6 +18,17 @@ endif ()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+if (NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif (NOT DEFINED CMAKE_BUILD_TYPE)
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(INSTALL_LIB_DESTINATION "bin")
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
