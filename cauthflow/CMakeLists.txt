@@ -161,7 +161,7 @@ if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "lib"
+        DESTINATION "${INSTALL_LIB_DESTINATION}"
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" ${Header_Files}
         DESTINATION "include")

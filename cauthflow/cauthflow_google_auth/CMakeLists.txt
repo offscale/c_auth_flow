@@ -80,7 +80,7 @@ if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "lib"
+        DESTINATION "${INSTALL_LIB_DESTINATION}"
         EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" ${Header_Files} DESTINATION "include")
 install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${PROJECT_NAME}")
