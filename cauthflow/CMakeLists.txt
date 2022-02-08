@@ -102,7 +102,7 @@ endif ()
 # Configure file (interpolate) #
 ################################
 
-configure_file("configure.h.in" "${CMAKE_CURRENT_BINARY_DIR}/cauthflow_configure.h" @ONLY)
+configure_file("configure.h.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" @ONLY)
 
 ###########
 # Linkage #
@@ -111,7 +111,7 @@ configure_file("configure.h.in" "${CMAKE_CURRENT_BINARY_DIR}/cauthflow_configure
 target_link_libraries(
         "${LIBRARY_NAME}"
         PRIVATE
-        "cauthflow_utils"
+        "${PROJECT_NAME}_utils"
         "${PROJECT_NAME}_compiler_flags"
 )
 
@@ -125,7 +125,7 @@ target_include_directories(
 
 add_subdirectory("${PROJECT_NAME}_google_auth")  # for export
 target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_utils")
-#target_link_libraries("${LIBRARY_NAME}" PRIVATE "cauthflow_google_auth")
+#target_link_libraries("${LIBRARY_NAME}" PRIVATE "${PROJECT_NAME}_google_auth")
 
 set_target_properties(
         "${LIBRARY_NAME}"
@@ -159,6 +159,6 @@ endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
         DESTINATION "lib"
         EXPORT "${LIBRARY_NAME}Targets")
-install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/cauthflow_configure.h" ${Header_Files}
+install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" ${Header_Files}
         DESTINATION "include")
 install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")

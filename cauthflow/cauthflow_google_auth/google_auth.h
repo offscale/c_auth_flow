@@ -31,10 +31,10 @@ struct StrStr {
     const char *first, *second;
 };
 
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct GoogleCloudProject get_google_auth(const char*);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct StrStr auth_flow_user_approval(void);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value * auth_flow_get_tokens(const char *, const char *);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value * auth_flow_get_tokens_from_refresh(const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct GoogleCloudProject get_google_auth(const char*, const char*, const char*);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct StrStr auth_flow_user_approval(const char*);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value * auth_flow_get_tokens(const char*, const char*, const char *, const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value * auth_flow_get_tokens_from_refresh(const char*, const char*, const char *);
 extern CAUTHFLOW_GOOGLE_AUTH_EXPORT const JSON_Object * get_project(const char *);
 
 #ifdef	__cplusplus
