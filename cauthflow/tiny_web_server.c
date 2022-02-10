@@ -117,14 +117,99 @@ void append(char *s, char c) {
     s[len + 1] = '\0';
 }
 
+errno_t
+strcat_s (char * dest, rsize_t dmax, const char * src)
+{
+    rsize_t orig_dmax;
+    char *orig_dest;
+    const char *overlap_bumper;
+
+    if (dest == NULL || src == NULL || dmax == 0 || dmax > 1000000) return -1;
+
+    /* hold base of dest in case src was not copied */
+    orig_dmax = dmax;
+    orig_dest = dest;
+
+    if (dest < src) {
+        overlap_bumper = src;
+
+        /* Find the end of dest */
+        while (*dest != '\0') {
+
+            if (dest == overlap_bumper) return -1;
+
+            dest++;
+            dmax--;
+            if (dmax == 0) return -1;
+        }
+
+        while (dmax > 0) {
+            if (dest == overlap_bumper) return -1;
+
+            *dest = *src;
+            if (*dest == '\0') {
+#ifdef SAFECLIB_STR_NULL_SLACK
+                /* null slack to clear any data */
+                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+#endif
+                return 0;
+            }
+
+            dmax--;
+            dest++;
+            src++;
+        }
+
+    } else {
+        overlap_bumper = dest;
+
+        /* Find the end of dest */
+        while (*dest != '\0') {
+
+            /*
+             * NOTE: no need to check for overlap here since src comes first
+             * in memory and we're not incrementing src here.
+             */
+            dest++;
+            dmax--;
+            if (dmax == 0) return -1;
+        }
+
+        while (dmax > 0) {
+            if (src == overlap_bumper) return -1;
+
+            *dest = *src;
+            if (*dest == '\0') {
+#ifdef SAFECLIB_STR_NULL_SLACK
+                /* null slack to clear any data */
+                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+#endif
+                return 0;
+            }
+
+            dmax--;
+            dest++;
+            src++;
+        }
+    }
+
+    /*
+     * the entire src was not copied, so null the string
+     */
+    fputs("strcat_s: not enough "
+                                       "space for src",
+                 stderr);
+
+    return -1;
+}
+
 struct AuthenticationResponse wait_for_oauth2_redirect() {
    struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     /* Initialize Winsock */
-    int iResult;
     WSADATA wsaData;
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         fprintf(stderr, "WSAStartup failed: %d\n", iResult);
     }
@@ -146,13 +231,14 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
     char query[QUERY_N]; /* roughly 350 chars expected from current output as printed */
     size_t i, j;
     char *_query, *key;
+    const size_t initial_size = STACK_SIZE * sizeof(char);
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     int
 #else
     unsigned long
 #endif
-            bytes;
+            bytes, total_bytes=0;
 
     if (server_socket < 0)
         err(1, "can't open socket");
@@ -191,40 +277,50 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
         }
 
         /* keep on reading until we have digest everything */
-        incoming_datastream = (char *)(malloc(STACK_SIZE * sizeof(char)));
+        incoming_datastream = (char *)(malloc(initial_size));
 
 
         if (incoming_datastream == NULL) err(ERROR_EOM_OVERFLOW, "OOM");
-        do {
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
             bytes = recv(client_file_descriptor, buffer, STACK_SIZE, 0);
 #else
             bytes = read(client_file_descriptor, buffer, STACK_SIZE);
 #endif
-            if ( bytes > 0 ) {
-                incoming_datastream = (char *)(realloc(incoming_datastream, bytes));
-                if (incoming_datastream == NULL) err(ERROR_EOM_OVERFLOW, "OOM");
+
+        total_bytes += bytes;
+        incoming_datastream = realloc(incoming_datastream, sizeof(char)*total_bytes + 1);
+        if (incoming_datastream && bytes > 0) {
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-                strcat_s(incoming_datastream, bytes, buffer);
+            strcat_s(incoming_datastream, bytes, buffer);
 #else
-                strcat(incoming_datastream, buffer);
+            incoming_datastream[bytes] = '\0';
+            strcat_s(incoming_datastream, bytes, buffer);
+            /* strcat_s (char * dest, rsize_t dmax, const char * src)
+            strcat(incoming_datastream, buffer);*/
 #endif
-                /* if we do not fill up our buffer then we have
-                   got the whole message */
-                if ( bytes < sizeof(buffer) ) {
-                    break;
-                }
-            } 
-        } while( bytes != 0);
+        }
+
+        if (incoming_datastream != NULL && total_bytes > 0) {
+            fputs("before NUL", stderr);
+            incoming_datastream[total_bytes] = '\0';
+            fputs("after NUL", stderr);
+            fputs("zero", stderr);
+        }
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-        if ( bytes < 0 ) {
-            puts("Error while reading incoming data stream.");
+        else {
+            fputs("Error while reading incoming data stream.", stderr);
             _write(client_file_descriptor, responseErr, sizeof(responseErr) - 1);
             continue;
         }
+#else
+        else {
+            exit(EXIT_FAILURE);
+        }
 #endif
 
+        fputs("one", stderr);
         /* check if this is a GET method */
         if ( incoming_datastream[2] != 'G' ||
              incoming_datastream[3] != 'E' ||
@@ -237,6 +333,7 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
 #endif
             continue;
         }
+        fputs("three", stderr);
 
 
         for (i=0, j=6; i<QUERY_N && !isspace(incoming_datastream[j]); i++, j++)
