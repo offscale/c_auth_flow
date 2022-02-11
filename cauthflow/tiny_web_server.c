@@ -43,11 +43,20 @@ char* strsep(char** stringp, const char* delim)
 #include <netinet/in.h>
 #include <err.h>
 #include <ctype.h>
+#include <netdb.h>
 
 #define ERROR_EOM_OVERFLOW EXIT_FAILURE
 #endif
 
 #include "macros.h"
+
+#ifndef SOCK_NONBLOCK
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/syslimits.h>
+
+# define SOCK_NONBLOCK O_NONBLOCK
+#endif /* ! SOCK_NONBLOCK */
 
 const char responseOk[] = "HTTP/1.0 200 OK\r\n"
                           "Content-Type: text/plain\r\n"
@@ -57,6 +66,7 @@ const char responseErr[] = "HTTP/1.0 400 Bad Request\r\n"
                            "Content-Type: text/plain\r\n"
                            "\r\n"
                            "Bad Request\r\n";
+const static char STOP_ON_STARTSWITH[] = "GET " EXPECTED_PATH;
 
 /**
 * Percent-decodes a string in-place.
@@ -203,8 +213,117 @@ strcat_s (char * dest, rsize_t dmax, const char * src)
     return -1;
 }
 
+int serve(char **response) {
+    int code;
+    char pipe_buf[PIPE_BUF+1];
+
+
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+    /* Initialize Winsock */
+    WSADATA wsaData;
+    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if (iResult != 0) {
+        fprintf(stderr, "WSAStartup failed: %d\n", iResult);
+    }
+#endif
+
+    int socket_options = SO_DEBUG;
+    const int server_socket = (int)socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in svr_addr, cli_addr;
+    socklen_t sin_len = sizeof(cli_addr);
+    int port = PORT_TO_BIND;
+
+    if (server_socket < 0)
+        err(1, "can't open socket");
+
+    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&socket_options, sizeof(int));
+
+
+    svr_addr.sin_family = AF_INET;
+    svr_addr.sin_addr.s_addr = INADDR_ANY;
+    svr_addr.sin_port = htons(port);
+
+    if (bind(server_socket, (struct sockaddr *)&svr_addr, sizeof(svr_addr)) == -1)
+    {
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+        closesocket(server_socket);
+#else
+        close(server_socket);
+#endif
+        fputs(strerror(code), stderr);
+        return code;
+    }
+
+    code = listen(server_socket, MSG_BACKLOG);
+    if (code == -1) {
+        fputs(strerror(errno), stderr);
+        return code;
+    }
+
+    /*if (*response == NULL)
+        *response = malloc(sizeof(char)*PIPE_BUF+1);*/
+
+    while(true) {
+        ssize_t bytes, total_bytes=0;
+        const int client_fd = accept(server_socket,
+                                     (struct sockaddr *)&cli_addr, &sin_len);
+        if (client_fd == -1) {
+            fputs(strerror(code), stderr);
+            return code;
+        }
+        puts("Running server on http://"SERVER_HOST ":" PORT_TO_BIND_S);
+
+        /* memset(pipe_buf, 0, PIPE_BUF); */
+        do {
+            bytes = read(client_fd, *response, PIPE_BUF);
+            if (bytes == -1) {
+                if (total_bytes == 0) {
+                    fputs(strerror(errno), stderr);
+                    return EXIT_FAILURE;
+                }
+            } else {
+                response = realloc(*response, total_bytes + bytes);
+                memcpy(*response + bytes, pipe_buf, bytes);
+                total_bytes += bytes;
+            }
+            printf("read bytes: %ld\n"
+                   "buffer: %s\n", bytes, *response);
+            fflush(stdout);
+        } while(bytes > 0);
+
+        if (strncmp(STOP_ON_STARTSWITH, *response, strlen(STOP_ON_STARTSWITH)) == 0) {
+            bytes = write(client_fd, responseOk, sizeof responseOk);
+            if (bytes == -1) {
+                fputs(strerror(errno), stderr);
+                return EXIT_FAILURE;
+            }
+            printf("wrote bytes: %ld\n", bytes);
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+            send(client_fd, responseOk, sizeof(responseOk) - 1, 0 );
+            closesocket(client_fd);
+#else
+            write(client_fd, responseOk, sizeof(responseOk) - 1);
+            close(client_fd);
+#endif
+            return EXIT_SUCCESS;
+        }
+    }
+}
+
 struct AuthenticationResponse wait_for_oauth2_redirect() {
    struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
+   char *response=NULL;
+   int code;
+   puts("serve()");
+   code = serve(&response);
+   fprintf(stderr, "serve::code: %d\n"
+                   "serve::response: %s\n",
+                   code, response);
+   puts("fin server()");
+   if (code != EXIT_SUCCESS) {
+     fputs("server() failed", stderr);
+   }
+   return authentication_response;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     /* Initialize Winsock */
