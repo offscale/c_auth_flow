@@ -15,6 +15,7 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
         "unofficial::parson::parson"
+        "libcurl-simple-https"
 )
 
 target_include_directories(

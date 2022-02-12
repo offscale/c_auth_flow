@@ -1,20 +1,18 @@
-get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
+set(LIBRARY_NAME "libcurl-simple-https")
 
-set(Header_Files "google_auth.h")
+set(Header_Files "curl_simple_https.h")
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "google_auth.c")
+set(Source_Files "curl_simple_https.c")
 source_group("Source Files" FILES "${Source_Files}")
 
-add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
-
+add_library("${LIBRARY_NAME}" "${Header_Files}" "${Source_Files}")
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/configure>"
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:include>"
 )
 
@@ -30,33 +28,6 @@ target_link_libraries(
         "${LIBRARY_NAME}"
         PUBLIC
         "${CURL_LINK_LIBRARIES}"
-        "libcurl-simple-https"
-)
-
-find_path(RANDOMSTR_INCLUDE_DIRS "randomstr.h")
-find_path(C89STRINGUTILS_INCLUDE_DIRS "c89stringutils_string_extras.h")
-
-target_include_directories(
-        "${LIBRARY_NAME}"
-        PRIVATE
-        "${RANDOMSTR_INCLUDE_DIRS}"
-        "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
-        "${C89STRINGUTILS_INCLUDE_DIRS}"
-)
-
-#find_package(libcurl-simple-https CONFIG REQUIRED)
-find_package(unofficial-parson CONFIG REQUIRED)
-set(_libs "unofficial::parson::parson")
-if (APPLE)
-  list(APPEND _libs "-framework CoreServices")
-endif (APPLE)
-
-target_link_libraries(
-        "${LIBRARY_NAME}"
-        PRIVATE
-        "${_libs}"
-        "${PROJECT_NAME}_utils"
-        "${PROJECT_NAME}"
 )
 
 set_target_properties(
@@ -75,4 +46,12 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
+set(installable_libs "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags")
+if (TARGET "${DEPENDANT_LIBRARY}")
+  list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
+endif (TARGET "${DEPENDANT_LIBRARY}")
+install(TARGETS ${installable_libs}
+        DESTINATION "lib"
+        EXPORT "${LIBRARY_NAME}Targets")
 install(FILES "${_export_file}" ${Header_Files} DESTINATION "include")
+install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")

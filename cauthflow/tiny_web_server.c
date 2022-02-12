@@ -302,28 +302,35 @@ int serve(char **response) {
 
         /* memset(pipe_buf, 0, PIPE_BUF); */
         do {
+            puts("before read");
             bytes = read(client_fd, pipe_buf, PIPE_BUF);
             printf("read bytes: %ld\n", bytes);
             if (bytes == -1) {
                 const int _code = fputs(strerror(errno), stderr);
+                puts("bytes == -1");
                 if (_code == EOF) return _code;
             }
             else if ( bytes > 0 ) {
-                const size_t new_size = total_bytes + bytes + 1;
+                const size_t new_size = total_bytes + bytes;
+                puts("bytes > 0");
                 if (new_size > current_size) {
+                    puts("b4 realloc");
                     *response = realloc(*response, new_size + 1);
+                    puts("l8 realloc");
                     if (*response == NULL) {
                         const int _code = fputs("OOM", stderr);
                         if (_code == EOF) return _code;
                         return EXIT_FAILURE;
                     }
                 }
+                puts("b4 memcpy");
                 memcpy(*response + total_bytes, pipe_buf, bytes);
+                puts("l8 memcpy");
                 total_bytes += bytes;
                 current_size = total_bytes;
             }
             if (bytes < PIPE_BUF)
-                bytes = 0;
+                break;
             /*printf("read bytes: %ld\n"
                    "buffer: %s\n", bytes, *response);
             fflush(stdout);*/
@@ -355,7 +362,7 @@ void
 query_into_auth_response(struct AuthenticationResponse *authentication_response, const char *var, const char *val);
 
 struct AuthenticationResponse wait_for_oauth2_redirect() {
-   struct AuthenticationResponse authentication_response = {NULL, NULL, NULL, NULL};
+   struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
    char *response = calloc(PIPE_BUF, sizeof(char));
    const int code = serve(&response);
    if (code != EXIT_SUCCESS) {
@@ -364,8 +371,9 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
    } else {
         /* querystring parsing */
         char *query = strdup(response), *tokens = query, *p;
+       fputs("serve() succeeded", stderr);
 
-        while ((p = strsep(&tokens, "&\n"))) {
+       while ((p = strsep(&tokens, "&\n"))) {
             char *var = strtok(p, "="),
                     *val = NULL;
             if (var && (val = strtok(NULL, "="))){

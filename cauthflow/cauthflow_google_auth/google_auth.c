@@ -169,11 +169,12 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
                     oauth_response.secret == NULL ? "(NULL)" : oauth_response.secret, temporary_secret_state);
             exit(EXIT_FAILURE);
         } else {
-            printf("struct AuthenticationResponse oauth_response = {\n"
+            printf("\n"
+                   "struct AuthenticationResponse oauth_response = {\n"
                    "  .scope=\"%s\",\n"
                    "  .secret=\"%s\",\n"
                    "  .code=\"%s\"\n"
-                   "}\n", oauth_response.scope, oauth_response.secret, oauth_response.code);
+                   "};\n", oauth_response.scope, oauth_response.secret, oauth_response.code);
         }
 
         str_str.first = redirect_uri;
