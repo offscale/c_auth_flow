@@ -234,12 +234,12 @@ int serve(char **response) {
                 return code == EXIT_SUCCESS? EXIT_FAILURE: code; \
             } else
 
-    struct addrinfo  hint = { 0 }, *server;
+    struct addrinfo  hint = { 0 }, *p, *info = NULL;
     int code, sockfd;
+    size_t current_size = PIPE_BUF;
     struct sockaddr_storage client_addr;
     socklen_t addr_size = sizeof client_addr;
     char pipe_buf[PIPE_BUF+1];
-    struct addrinfo *p, *info = NULL;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     /* Initialize Winsock */
@@ -250,7 +250,7 @@ int serve(char **response) {
         if (_code == EOF) return _code;
         return code == EXIT_SUCCESS? EXIT_FAILURE: code;
     }
-#endif
+#endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
 
     hint.ai_family =  AF_INET;
     hint.ai_socktype = SOCK_STREAM;
@@ -263,7 +263,7 @@ int serve(char **response) {
 
     for(p = info; p ; p = p->ai_next) {
         sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if(sockfd == -1) {
+        if (sockfd == -1) {
             continue;
         }
         code = bind(sockfd, p->ai_addr, p->ai_addrlen);
@@ -286,7 +286,12 @@ int serve(char **response) {
     /*if (*response == NULL) *response = malloc(sizeof(char)*PIPE_BUF+1);*/
 
     while(true) {
-        ssize_t bytes, total_bytes=0;
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+        int
+#else
+        ssize_t
+#endif
+        bytes, total_bytes=0;
         const int client_fd = accept(sockfd, (struct sockaddr *) &client_addr, &addr_size);
         if (client_fd == -1) {
             const int _code = fputs(strerror(code), stderr);
@@ -302,17 +307,10 @@ int serve(char **response) {
                 const int _code = fputs(strerror(errno), stderr);
                 if (_code == EOF) return _code;
             }
-
-            /* if (bytes == -1) {
-                if (total_bytes == 0) {
-                    fputs(strerror(errno), stderr);
-                    return EXIT_FAILURE;
-                }
-            } else { */
             else if ( bytes > 0 ) {
-                const size_t new_size = total_bytes + bytes;
-                if (new_size > PIPE_BUF) {
-                    *response = realloc(*response, new_size);
+                const size_t new_size = total_bytes + bytes + 1;
+                if (new_size > current_size) {
+                    *response = realloc(*response, new_size + 1);
                     if (*response == NULL) {
                         const int _code = fputs("OOM", stderr);
                         if (_code == EOF) return _code;
@@ -321,16 +319,24 @@ int serve(char **response) {
                 }
                 memcpy(*response + total_bytes, pipe_buf, bytes);
                 total_bytes += bytes;
+                current_size = total_bytes;
+                bytes = 0;
             }
-            printf("read bytes: %ld\n" /* this `printf` and `fflush` are to be removed */
+            /*printf("read bytes: %ld\n"
                    "buffer: %s\n", bytes, *response);
-            fflush(stdout);
+            fflush(stdout);*/
         } while(bytes > 0);
 
-        if (*response != NULL && strncmp(STOP_ON_STARTSWITH, *response, strlen(STOP_ON_STARTSWITH)) == 0) {
-            STD_ERROR_HANDLER(write_and_close_socket(client_fd, responseOk, sizeof(responseOk) - 1));
-            return EXIT_SUCCESS;
-        } else
+        if (*response != NULL) {
+            (*response)[total_bytes] = '\0';
+            if (strncmp(STOP_ON_STARTSWITH, *response, strlen(STOP_ON_STARTSWITH)) == 0) {
+                STD_ERROR_HANDLER(write_and_close_socket(client_fd, responseOk, sizeof(responseOk) - 1));
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+                WSACleanup();
+#endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
+                return EXIT_SUCCESS;
+            }
+        }
         STD_ERROR_HANDLER(write_and_close_socket(client_fd, responseErr, sizeof(responseErr) - 1));
     }
 
@@ -339,194 +345,39 @@ int serve(char **response) {
 
 struct AuthenticationResponse wait_for_oauth2_redirect() {
    struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
-   char *response=calloc(sizeof(char), PIPE_BUF+1);
-   int code;
-   puts("serve()");
-   code = serve(&response);
-   fprintf(stderr, "serve::code: %d\n"
-                   "serve::response: %s\n",
-                   code, response);
-   puts("fin server()");
-   if (code != EXIT_SUCCESS) {
-     fputs("server() failed", stderr);
+   char *response = calloc(PIPE_BUF, sizeof(char));
+   const int code = serve(&response);
+   if (code != EXIT_SUCCESS) fputs("server() failed", stderr);
+   else {
+       /* querystring parsing */
+#define QUERY_N 350
+       char query[QUERY_N]; /* roughly 350 chars expected from current output as printed */
+       size_t i, j;
+       char *_query, *key;
+
+       printf("*response: \"%s\"", response);
+
+       for (i=0, j=6; i<QUERY_N && !isspace(response[j]); i++, j++)
+           query[i] = response[j];
+       query[i + 1] = '\0';
+#undef QUERY_N
+       j = i + 1;
+
+       _query = (char*)malloc(j * sizeof(char));
+       memcpy(_query, query, j);
+
+       for (; (key = keyValuePair(&_query)); ) {
+           char *value = key;
+           const char *_key = extractKey(&value);
+           if (strcmp("code", _key) == 0)
+               authentication_response.code = value;
+           else if (strcmp(EXPECTED_PATH"?state", _key) == 0)
+               authentication_response.secret = value;
+       }
+       free(_query);
+       free(response);
    }
    return authentication_response;
-
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    /* Initialize Winsock */
-    WSADATA wsaData;
-    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        fprintf(stderr, "WSAStartup failed: %d\n", iResult);
-    }
-#endif
-
-    int socket_options = SO_DEBUG;
-    int client_file_descriptor;
-
-    struct sockaddr_in svr_addr, cli_addr;
-    socklen_t sin_len = sizeof(cli_addr);
-
-    int server_socket = (int)socket(AF_INET, SOCK_STREAM, 0);
-    int port = PORT_TO_BIND;
-    int listen_resp;
-    bool ok;
-    char *incoming_datastream;
-    char buffer[STACK_SIZE];
-#define QUERY_N 350
-    char query[QUERY_N]; /* roughly 350 chars expected from current output as printed */
-    size_t i, j;
-    char *_query, *key;
-    const size_t initial_size = STACK_SIZE * sizeof(char);
-
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    int
-#else
-    unsigned long
-#endif
-            bytes, total_bytes=0;
-
-    if (server_socket < 0)
-        err(1, "can't open socket");
-
-    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&socket_options, sizeof(int));
-
-
-    svr_addr.sin_family = AF_INET;
-    svr_addr.sin_addr.s_addr = INADDR_ANY;
-    svr_addr.sin_port = htons(port);
-
-    if (bind(server_socket, (struct sockaddr *)&svr_addr, sizeof(svr_addr)) == -1)
-    {
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-        closesocket(server_socket);
-#else
-        close(server_socket);
-#endif
-        err(1, "Can't bind");
-    }
-
-    listen_resp = listen(server_socket, MSG_BACKLOG);
-    if (listen_resp != 0) {
-        exit(EXIT_FAILURE);
-    }
-    ok = false;
-    while (!ok)
-    {
-        client_file_descriptor = (int)accept(server_socket, (struct sockaddr *)&cli_addr, &sin_len);
-        puts("got incoming connection");
-
-        if (client_file_descriptor == -1)
-        {
-            perror("Can't accept");
-            continue;
-        }
-
-        /* keep on reading until we have digest everything */
-        incoming_datastream = (char *)(malloc(initial_size));
-
-
-        if (incoming_datastream == NULL) err(ERROR_EOM_OVERFLOW, "OOM");
-
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-            bytes = recv(client_file_descriptor, buffer, STACK_SIZE, 0);
-#else
-            bytes = read(client_file_descriptor, buffer, STACK_SIZE);
-#endif
-
-        total_bytes += bytes;
-        incoming_datastream = realloc(incoming_datastream, sizeof(char)*total_bytes + 1);
-        if (incoming_datastream && bytes > 0) {
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-            strcat_s(incoming_datastream, bytes, buffer);
-#else
-            incoming_datastream[bytes] = '\0';
-            strcat_s(incoming_datastream, bytes, buffer);
-            /* strcat_s (char * dest, rsize_t dmax, const char * src)
-            strcat(incoming_datastream, buffer);*/
-#endif
-        }
-
-        if (incoming_datastream != NULL && total_bytes > 0) {
-            fputs("before NUL", stderr);
-            incoming_datastream[total_bytes] = '\0';
-            fputs("after NUL", stderr);
-            fputs("zero", stderr);
-        }
-
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-        else {
-            fputs("Error while reading incoming data stream.", stderr);
-            _write(client_file_descriptor, responseErr, sizeof(responseErr) - 1);
-            continue;
-        }
-#else
-        else {
-            exit(EXIT_FAILURE);
-        }
-#endif
-
-        fputs("one", stderr);
-        /* check if this is a GET method */
-        if ( incoming_datastream[2] != 'G' ||
-             incoming_datastream[3] != 'E' ||
-             incoming_datastream[4] != 'T' ) {
-
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-            send(client_file_descriptor, responseOk, sizeof(responseOk) - 1, 0);
-#else
-            write(client_file_descriptor, responseOk, sizeof(responseOk) - 1); /*-1:'\0'*/
-#endif
-            continue;
-        }
-        fputs("three", stderr);
-
-
-        for (i=0, j=6; i<QUERY_N && !isspace(incoming_datastream[j]); i++, j++)
-            query[i] = incoming_datastream[j];
-        query[i + 1] = '\0';
-#undef QUERY_N
-        j = i + 1;
-
-        _query = (char*)malloc(j * sizeof(char));
-        memcpy(_query, query, j);
-
-        for (; (key = keyValuePair(&_query)); ) {
-            char *value = key;
-            const char *_key = extractKey(&value);
-            if (strcmp("code", _key) == 0)
-                authentication_response.code = value;
-            else if (strcmp(EXPECTED_PATH"?state", _key) == 0)
-                authentication_response.secret = value;
-        }
-        free(_query);
-
-        ok = authentication_response.code != NULL && authentication_response.secret != NULL;
-        
-        if ( ok ) {
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-            send( client_file_descriptor, responseOk, sizeof(responseOk) - 1, 0 );
-            closesocket(client_file_descriptor);
-#else
-            write(client_file_descriptor, responseOk, sizeof(responseOk) - 1); /*-1:'\0'*/
-            close(client_file_descriptor);
-#endif
-            break;
-        } else {
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-            send( client_file_descriptor, responseErr, sizeof(responseErr) - 1, 0 );
-            closesocket(client_file_descriptor);
-#else
-            write(client_file_descriptor, responseErr, sizeof(responseErr) - 1); /*-1:'\0'*/
-            close(client_file_descriptor);
-#endif
-        }
-
-    }
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    WSACleanup();
-#endif
-    return authentication_response;
 }
 
 #ifdef TEST_TINY_WEB_SERVER

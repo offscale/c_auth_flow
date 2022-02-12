@@ -162,10 +162,18 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
     {
         const struct AuthenticationResponse oauth_response = wait_for_oauth2_redirect();
 
+        printf("struct AuthenticationResponse oauth_response = {\n"
+               "  .raw=\"%s\",\n"
+               "  .secret=\"%s\",\n"
+               "  .code=\"%s\"\n"
+               "}\n", oauth_response.raw, oauth_response.secret, oauth_response.code);
+
         if (oauth_response.secret == NULL || strcmp(oauth_response.secret, temporary_secret_state) != 0) {
             fprintf(stderr, "cauthflow redirect contained the wrong secret state (%s), expected: (%s)\n",
                     oauth_response.secret == NULL ? "(NULL)" : oauth_response.secret, temporary_secret_state);
             exit(EXIT_FAILURE);
+        } else {
+
         }
 
         {
