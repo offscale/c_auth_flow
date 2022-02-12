@@ -213,106 +213,133 @@ strcat_s (char * dest, rsize_t dmax, const char * src)
     return -1;
 }
 
-int serve(char **response) {
-    int code;
-    char pipe_buf[PIPE_BUF+1];
+int write_and_close_socket(int client_fd, const char responseMessage[], size_t messageSize) {
+    ssize_t wrote;
+    int closed_code;
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+    wrote = send(client_fd, responseMessage, messageSize - 1, 0 );
+    closed_code = closesocket(client_fd);
+#else
+    wrote = write(client_fd, responseMessage, messageSize - 1);
+    closed_code = close(client_fd);
+#endif
+    return wrote == -1 || closed_code == -1 ? -1 : 0;
+}
 
+int serve(char **response) {
+#define STD_ERROR_HANDLER(code)                                  \
+            if((code) == -1) {                                   \
+                const int _c = fputs(strerror(errno), stderr);   \
+                if (_c == EOF) return _c;                        \
+                return code == EXIT_SUCCESS? EXIT_FAILURE: code; \
+            } else
+
+    struct addrinfo  hint = { 0 }, *server;
+    int code, sockfd;
+    struct sockaddr_storage client_addr;
+    socklen_t addr_size = sizeof client_addr;
+    char pipe_buf[PIPE_BUF+1];
+    struct addrinfo *p, *info = NULL;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     /* Initialize Winsock */
     WSADATA wsaData;
     int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
-        fprintf(stderr, "WSAStartup failed: %d\n", iResult);
+        const int _code = fprintf(stderr, "WSAStartup failed: %d\n", iResult);
+        if (_code == EOF) return _code;
+        return code == EXIT_SUCCESS? EXIT_FAILURE: code;
     }
 #endif
 
-    int socket_options = SO_DEBUG;
-    const int server_socket = (int)socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in svr_addr, cli_addr;
-    socklen_t sin_len = sizeof(cli_addr);
-    int port = PORT_TO_BIND;
+    hint.ai_family =  AF_INET;
+    hint.ai_socktype = SOCK_STREAM;
+    hint.ai_flags = AI_PASSIVE | SOCK_NONBLOCK;
+    code = getaddrinfo(NULL, PORT_TO_BIND_S, &hint, &info);
+    if (code != 0) {
+        fputs(gai_strerror(code), stderr);
+        return code == EXIT_SUCCESS ?  EXIT_FAILURE : code;
+    }
 
-    if (server_socket < 0)
-        err(1, "can't open socket");
-
-    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&socket_options, sizeof(int));
-
-
-    svr_addr.sin_family = AF_INET;
-    svr_addr.sin_addr.s_addr = INADDR_ANY;
-    svr_addr.sin_port = htons(port);
-
-    if (bind(server_socket, (struct sockaddr *)&svr_addr, sizeof(svr_addr)) == -1)
-    {
+    for(p = info; p ; p = p->ai_next) {
+        sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if(sockfd == -1) {
+            continue;
+        }
+        code = bind(sockfd, p->ai_addr, p->ai_addrlen);
+        if (code == -1) {
+            const int _code = fputs(strerror(code), stderr);
+            if (_code == EOF) return _code;
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-        closesocket(server_socket);
+                STD_ERROR_HANDLER(closesocket(sockfd));
 #else
-        close(server_socket);
+            STD_ERROR_HANDLER(close(sockfd));
 #endif
-        fputs(strerror(code), stderr);
-        return code;
+            continue;
+        }
+
+        break;
     }
 
-    code = listen(server_socket, MSG_BACKLOG);
-    if (code == -1) {
-        fputs(strerror(errno), stderr);
-        return code;
-    }
+    STD_ERROR_HANDLER(listen(sockfd, MSG_BACKLOG));
 
-    /*if (*response == NULL)
-        *response = malloc(sizeof(char)*PIPE_BUF+1);*/
+    /*if (*response == NULL) *response = malloc(sizeof(char)*PIPE_BUF+1);*/
 
     while(true) {
         ssize_t bytes, total_bytes=0;
-        const int client_fd = accept(server_socket,
-                                     (struct sockaddr *)&cli_addr, &sin_len);
+        const int client_fd = accept(sockfd, (struct sockaddr *) &client_addr, &addr_size);
         if (client_fd == -1) {
-            fputs(strerror(code), stderr);
-            return code;
+            const int _code = fputs(strerror(code), stderr);
+            if (_code == EOF) return _code;
+            continue;
         }
         puts("Running server on http://"SERVER_HOST ":" PORT_TO_BIND_S);
 
         /* memset(pipe_buf, 0, PIPE_BUF); */
         do {
-            bytes = read(client_fd, *response, PIPE_BUF);
+            bytes = read(client_fd, pipe_buf, PIPE_BUF);
             if (bytes == -1) {
+                const int _code = fputs(strerror(errno), stderr);
+                if (_code == EOF) return _code;
+            }
+
+            /* if (bytes == -1) {
                 if (total_bytes == 0) {
                     fputs(strerror(errno), stderr);
                     return EXIT_FAILURE;
                 }
-            } else {
-                response = realloc(*response, total_bytes + bytes);
-                memcpy(*response + bytes, pipe_buf, bytes);
+            } else { */
+            else if ( bytes > 0 ) {
+                const size_t new_size = total_bytes + bytes;
+                if (new_size > PIPE_BUF) {
+                    *response = realloc(*response, new_size);
+                    if (*response == NULL) {
+                        const int _code = fputs("OOM", stderr);
+                        if (_code == EOF) return _code;
+                        return EXIT_FAILURE;
+                    }
+                }
+                memcpy(*response + total_bytes, pipe_buf, bytes);
                 total_bytes += bytes;
             }
-            printf("read bytes: %ld\n"
+            printf("read bytes: %ld\n" /* this `printf` and `fflush` are to be removed */
                    "buffer: %s\n", bytes, *response);
             fflush(stdout);
         } while(bytes > 0);
 
-        if (strncmp(STOP_ON_STARTSWITH, *response, strlen(STOP_ON_STARTSWITH)) == 0) {
-            bytes = write(client_fd, responseOk, sizeof responseOk);
-            if (bytes == -1) {
-                fputs(strerror(errno), stderr);
-                return EXIT_FAILURE;
-            }
-            printf("wrote bytes: %ld\n", bytes);
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-            send(client_fd, responseOk, sizeof(responseOk) - 1, 0 );
-            closesocket(client_fd);
-#else
-            write(client_fd, responseOk, sizeof(responseOk) - 1);
-            close(client_fd);
-#endif
+        if (*response != NULL && strncmp(STOP_ON_STARTSWITH, *response, strlen(STOP_ON_STARTSWITH)) == 0) {
+            STD_ERROR_HANDLER(write_and_close_socket(client_fd, responseOk, sizeof(responseOk) - 1));
             return EXIT_SUCCESS;
-        }
+        } else
+        STD_ERROR_HANDLER(write_and_close_socket(client_fd, responseErr, sizeof(responseErr) - 1));
     }
+
+#undef STD_ERROR_HANDLER
 }
 
 struct AuthenticationResponse wait_for_oauth2_redirect() {
    struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
-   char *response=NULL;
+   char *response=calloc(sizeof(char), PIPE_BUF+1);
    int code;
    puts("serve()");
    code = serve(&response);
