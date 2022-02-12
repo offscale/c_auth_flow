@@ -131,7 +131,6 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
     "https://www.googleapis.com/auth/accounts.reauth";
 
     char *url;
-#ifdef CAUTHFLOW_CLIENT_FROM_CONFIG
     CURLU *urlp = curl_url();
     CURLUcode rc = curl_url_set(urlp, CURLUPART_SCHEME, "https", 0);
     rc = curl_url_set(urlp, CURLUPART_HOST, "accounts.google.com", 0);
@@ -139,7 +138,18 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
     rc = curl_url_set(urlp, CURLUPART_PATH, "/o/oauth2/v2/auth", 0);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "response_type=code&access_type=offline", 0);
     rc = append_curl_query(urlp, "state=%s", temporary_secret_state);
+
+#ifdef CAUTHFLOW_CLIENT_FROM_CONFIG
     rc = curl_url_set(urlp, CURLUPART_QUERY, "client_id=" CLIENT_ID, CURLU_APPENDQUERY);
+#else
+    {
+        char *client_id_str;
+        asprintf(&client_id_str, "client_id=%s", client_id);
+        rc = curl_url_set(urlp, CURLUPART_QUERY, client_id_str, CURLU_APPENDQUERY);
+        free(client_id_str);
+    }
+#endif /* CAUTHFLOW_CLIENT_FROM_CONFIG */
+
     rc = append_curl_query(urlp, "redirect_uri=%s", redirect_uri);
     rc = append_curl_query(urlp, "scope=%s", scope);
     rc = curl_url_get(urlp, CURLUPART_URL, &url, 0);
@@ -147,15 +157,6 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
         open_browser(url);
         curl_free(url);
     }
-#else
-    asprintf(&url, "https://accounts.google.com/o/oauth2/v2/auth?"
-                   "response_type=code&access_type=offline&"
-                   "state=%s&client_id=%s&"
-                   "redirect_uri=%s&scope=%s",
-             temporary_secret_state, client_id, redirect_uri, scope);
-    open_browser(url);
-    free(url);
-#endif /* CAUTHFLOW_CLIENT_FROM_CONFIG */
 
     /* we then need to start our web server and block
        until we get the appropriate response */
@@ -185,23 +186,29 @@ inline JSON_Value *auth_flow_get_tokens(const char *client_id, const char *clien
                                         const char *code, const char *redirect_uri) {
     CURLU *urlp = curl_url();
     CURLUcode rc = curl_url_set(urlp, CURLUPART_SCHEME, "https", 0);
-#ifdef CAUTHFLOW_CLIENT_FROM_CONFIG
+
     rc = curl_url_set(urlp, CURLUPART_HOST, "oauth2.googleapis.com", 0);
     rc = curl_url_set(urlp, CURLUPART_PORT, "443", 0);
     rc = curl_url_set(urlp, CURLUPART_PATH, "/token", 0);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "grant_type=authorization_code", 0);
     rc = append_curl_query(urlp, "code=%s", code);
     rc = append_curl_query(urlp, "redirect_uri=%s", redirect_uri);
+#ifdef CAUTHFLOW_CLIENT_FROM_CONFIG
     rc = curl_url_set(urlp, CURLUPART_QUERY, "client_id=" CLIENT_ID, CURLU_APPENDQUERY);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "client_secret=" CLIENT_SECRET, CURLU_APPENDQUERY);
 #else
-    char *url;
-    asprintf(&url, "https://oauth2.googleapis.com/token?"
-                   "grant_type=authorization_code&code=%s&"
-                   "redirect_uri=%s&client_id=%s&client_secret=%s",
-                   code, redirect_uri, client_id, client_secret);
-    printf("auth_flow_get_tokens::url: \"%s\"", url);
-    rc = curl_url_set(urlp, CURLUPART_URL, url, 0);
+    {
+        char *client_id_str;
+        asprintf(&client_id_str, "client_id=%s", client_id);
+        rc = curl_url_set(urlp, CURLUPART_QUERY, client_id_str, CURLU_APPENDQUERY);
+        free(client_id_str);
+    }
+    {
+        char *client_secret_str;
+        asprintf(&client_secret_str, "client_secret=%s", client_secret);
+        rc = curl_url_set(urlp, CURLUPART_QUERY, client_secret_str, CURLU_APPENDQUERY);
+        free(client_secret_str);
+    }
 #endif /* CAUTHFLOW_CLIENT_FROM_CONFIG */
     if (rc != CURLUE_OK) return NULL;
     {
@@ -221,24 +228,31 @@ inline JSON_Value *auth_flow_get_tokens_from_refresh(const char *client_id,
                                                      const char *refresh_token) {
     CURLU *urlp = curl_url();
     CURLUcode rc = curl_url_set(urlp, CURLUPART_SCHEME, "https", 0);
-#ifdef CAUTHFLOW_CLIENT_FROM_CONFIG
+
     rc = curl_url_set(urlp, CURLUPART_HOST, "oauth2.googleapis.com", 0);
     rc = curl_url_set(urlp, CURLUPART_PORT, "443", 0);
     rc = curl_url_set(urlp, CURLUPART_PATH, "/token", 0);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "grant_type=refresh_token", 0);
+
+#ifdef CAUTHFLOW_CLIENT_FROM_CONFIG
     rc = curl_url_set(urlp, CURLUPART_QUERY, "client_id=" CLIENT_ID, CURLU_APPENDQUERY);
     rc = curl_url_set(urlp, CURLUPART_QUERY, "client_secret=" CLIENT_SECRET, CURLU_APPENDQUERY);
-    rc = append_curl_query(urlp, "refresh_token=%s", refresh_token);
 #else
-    char *url;
-    asprintf(&url, "https://oauth2.googleapis.com/token?"
-                   "grant_type=refresh_token&"
-                   "client_id=%s&"
-                   "client_secret=%s&"
-                   "refresh_token=%s",
-                   client_id, client_secret, refresh_token);
-    rc = curl_url_set(urlp, CURLUPART_URL, url, 0);
+    {
+        char *client_id_str;
+        asprintf(&client_id_str, "client_id=%s", client_id);
+        rc = curl_url_set(urlp, CURLUPART_QUERY, client_id_str, CURLU_APPENDQUERY);
+        free(client_id_str);
+    }
+    {
+        char *client_secret_str;
+        asprintf(&client_secret_str, "client_secret=%s", client_secret);
+        rc = curl_url_set(urlp, CURLUPART_QUERY, client_secret_str, CURLU_APPENDQUERY);
+        free(client_secret_str);
+    }
 #endif /* CAUTHFLOW_CLIENT_FROM_CONFIG */
+
+    rc = append_curl_query(urlp, "refresh_token=%s", refresh_token);
     if (rc != CURLUE_OK) return NULL;
 
     {
