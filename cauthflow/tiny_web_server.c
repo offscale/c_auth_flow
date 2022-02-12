@@ -303,6 +303,7 @@ int serve(char **response) {
         /* memset(pipe_buf, 0, PIPE_BUF); */
         do {
             bytes = read(client_fd, pipe_buf, PIPE_BUF);
+            printf("read bytes: %ld\n", bytes);
             if (bytes == -1) {
                 const int _code = fputs(strerror(errno), stderr);
                 if (_code == EOF) return _code;
@@ -320,8 +321,9 @@ int serve(char **response) {
                 memcpy(*response + total_bytes, pipe_buf, bytes);
                 total_bytes += bytes;
                 current_size = total_bytes;
-                bytes = 0;
             }
+            if (bytes < PIPE_BUF)
+                bytes = 0;
             /*printf("read bytes: %ld\n"
                    "buffer: %s\n", bytes, *response);
             fflush(stdout);*/
@@ -331,6 +333,12 @@ int serve(char **response) {
             (*response)[total_bytes] = '\0';
             if (strncmp(STOP_ON_STARTSWITH, *response, strlen(STOP_ON_STARTSWITH)) == 0) {
                 STD_ERROR_HANDLER(write_and_close_socket(client_fd, responseOk, sizeof(responseOk) - 1));
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+                Sleep(1000*
+#else
+                sleep(
+#endif
+                100);
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
                 WSACleanup();
 #endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
@@ -343,41 +351,52 @@ int serve(char **response) {
 #undef STD_ERROR_HANDLER
 }
 
+void
+query_into_auth_response(struct AuthenticationResponse *authentication_response, const char *var, const char *val);
+
 struct AuthenticationResponse wait_for_oauth2_redirect() {
-   struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
+   struct AuthenticationResponse authentication_response = {NULL, NULL, NULL, NULL};
    char *response = calloc(PIPE_BUF, sizeof(char));
    const int code = serve(&response);
-   if (code != EXIT_SUCCESS) fputs("server() failed", stderr);
-   else {
-       /* querystring parsing */
-#define QUERY_N 350
-       char query[QUERY_N]; /* roughly 350 chars expected from current output as printed */
-       size_t i, j;
-       char *_query, *key;
+   if (code != EXIT_SUCCESS) {
+       fputs("serve() failed", stderr);
+       exit(code);
+   } else {
+        /* querystring parsing */
+        char *query = strdup(response), *tokens = query, *p;
 
-       printf("*response: \"%s\"", response);
+        while ((p = strsep(&tokens, "&\n"))) {
+            char *var = strtok(p, "="),
+                    *val = NULL;
+            if (var && (val = strtok(NULL, "="))){
+                size_t i;
+                bool found_space=false;
+                for(i=0; val[i] != '\0'; i++)
+                    if(isspace(val[i])) {
+                        found_space = true;
+                        break;
+                    }
+                if (found_space) {
+                    val[i] = '\0';
+                    query_into_auth_response(&authentication_response, var, val);
+                    break;
+                } else query_into_auth_response(&authentication_response, var, val);;
+            } else
+                fputs("<empty field>\n", stderr);
+        }
 
-       for (i=0, j=6; i<QUERY_N && !isspace(response[j]); i++, j++)
-           query[i] = response[j];
-       query[i + 1] = '\0';
-#undef QUERY_N
-       j = i + 1;
-
-       _query = (char*)malloc(j * sizeof(char));
-       memcpy(_query, query, j);
-
-       for (; (key = keyValuePair(&_query)); ) {
-           char *value = key;
-           const char *_key = extractKey(&value);
-           if (strcmp("code", _key) == 0)
-               authentication_response.code = value;
-           else if (strcmp(EXPECTED_PATH"?state", _key) == 0)
-               authentication_response.secret = value;
-       }
-       free(_query);
-       free(response);
-   }
+        free(query);
+        free(response);
+    }
    return authentication_response;
+}
+
+void
+query_into_auth_response(struct AuthenticationResponse *authentication_response, const char *var, const char *val) {
+    if (var[0] == 'G' && var[1] == 'E' && var[2] == 'T' && var[3] == ' ' )
+        (*authentication_response).secret = strdup(val);
+    else if (strcmp(var, "code") == 0) (*authentication_response).code = strdup(val);
+    else if (strcmp(var, "scope") == 0) (*authentication_response).scope = strdup(val);
 }
 
 #ifdef TEST_TINY_WEB_SERVER

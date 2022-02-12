@@ -152,7 +152,7 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
                    "response_type=code&access_type=offline&"
                    "state=%s&client_id=%s&"
                    "redirect_uri=%s&scope=%s",
-             temporary_secret_state, CLIENT_ID, redirect_uri, scope);
+             temporary_secret_state, client_id, redirect_uri, scope);
     open_browser(url);
     free(url);
 #endif /* CAUTHFLOW_CLIENT_FROM_CONFIG */
@@ -161,27 +161,23 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
        until we get the appropriate response */
     {
         const struct AuthenticationResponse oauth_response = wait_for_oauth2_redirect();
-
-        printf("struct AuthenticationResponse oauth_response = {\n"
-               "  .raw=\"%s\",\n"
-               "  .secret=\"%s\",\n"
-               "  .code=\"%s\"\n"
-               "}\n", oauth_response.raw, oauth_response.secret, oauth_response.code);
+        struct StrStr str_str;
 
         if (oauth_response.secret == NULL || strcmp(oauth_response.secret, temporary_secret_state) != 0) {
             fprintf(stderr, "cauthflow redirect contained the wrong secret state (%s), expected: (%s)\n",
                     oauth_response.secret == NULL ? "(NULL)" : oauth_response.secret, temporary_secret_state);
             exit(EXIT_FAILURE);
         } else {
-
+            printf("struct AuthenticationResponse oauth_response = {\n"
+                   "  .scope=\"%s\",\n"
+                   "  .secret=\"%s\",\n"
+                   "  .code=\"%s\"\n"
+                   "}\n", oauth_response.scope, oauth_response.secret, oauth_response.code);
         }
 
-        {
-            struct StrStr str_str;
-            str_str.first = redirect_uri;
-            str_str.second = oauth_response.code;
-            return str_str;
-        }
+        str_str.first = redirect_uri;
+        str_str.second = oauth_response.code;
+        return str_str;
     }
 }
 
@@ -204,6 +200,7 @@ inline JSON_Value *auth_flow_get_tokens(const char *client_id, const char *clien
                    "grant_type=authorization_code&code=%s&"
                    "redirect_uri=%s&client_id=%s&client_secret=%s",
                    code, redirect_uri, client_id, client_secret);
+    printf("auth_flow_get_tokens::url: \"%s\"", url);
     rc = curl_url_set(urlp, CURLUPART_URL, url, 0);
 #endif /* CAUTHFLOW_CLIENT_FROM_CONFIG */
     if (rc != CURLUE_OK) return NULL;

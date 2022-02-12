@@ -21,7 +21,7 @@ extern CAUTHFLOW_EXPORT const char responseErr[];
    This is doing what startHttpServer is doing
    in PHP. */
 struct AuthenticationResponse {
-    const char *raw, *secret, *code;
+    const char *secret, *code, *scope;
 };
 
 extern CAUTHFLOW_EXPORT void split_querystring(const char*);
