@@ -11,6 +11,10 @@
 #include <ws2tcpip.h>
 #include <winsock2.h>
 #include <io.h>
+typedef SSIZE_T ssize_t;
+#define PIPE_BUF 512
+#define strdup _strdup
+#define read _read
 
 void err(int code, const char *message) {
     fputs(message, stderr);
@@ -47,9 +51,6 @@ char* strsep(char** stringp, const char* delim)
 #include <netdb.h>
 
 #define ERROR_EOM_OVERFLOW EXIT_FAILURE
-#endif
-
-#include "macros.h"
 
 #ifndef SOCK_NONBLOCK
 
@@ -59,6 +60,10 @@ char* strsep(char** stringp, const char* delim)
 
 # define SOCK_NONBLOCK O_NONBLOCK
 #endif /* ! SOCK_NONBLOCK */
+
+#endif
+
+#include "macros.h"
 
 const char responseOk[] = "HTTP/1.0 200 OK\r\n"
                           "Content-Type: text/plain\r\n"
@@ -129,114 +134,33 @@ void append(char *s, char c) {
     s[len + 1] = '\0';
 }
 
-errno_t
-strcat_s(char *dest, rsize_t dmax, const char *src) {
-    rsize_t orig_dmax;
-    char *orig_dest;
-    const char *overlap_bumper;
-
-    if (dest == NULL || src == NULL || dmax == 0 || dmax > 1000000) return -1;
-
-    /* hold base of dest in case src was not copied */
-    orig_dmax = dmax;
-    orig_dest = dest;
-
-    if (dest < src) {
-        overlap_bumper = src;
-
-        /* Find the end of dest */
-        while (*dest != '\0') {
-
-            if (dest == overlap_bumper) return -1;
-
-            dest++;
-            dmax--;
-            if (dmax == 0) return -1;
-        }
-
-        while (dmax > 0) {
-            if (dest == overlap_bumper) return -1;
-
-            *dest = *src;
-            if (*dest == '\0') {
-#ifdef SAFECLIB_STR_NULL_SLACK
-                /* null slack to clear any data */
-                 while (dmax) { *dest = '\0'; dmax--; dest++; }
-#endif
-                return 0;
-            }
-
-            dmax--;
-            dest++;
-            src++;
-        }
-
-    } else {
-        overlap_bumper = dest;
-
-        /* Find the end of dest */
-        while (*dest != '\0') {
-
-            /*
-             * NOTE: no need to check for overlap here since src comes first
-             * in memory and we're not incrementing src here.
-             */
-            dest++;
-            dmax--;
-            if (dmax == 0) return -1;
-        }
-
-        while (dmax > 0) {
-            if (src == overlap_bumper) return -1;
-
-            *dest = *src;
-            if (*dest == '\0') {
-#ifdef SAFECLIB_STR_NULL_SLACK
-                /* null slack to clear any data */
-                 while (dmax) { *dest = '\0'; dmax--; dest++; }
-#endif
-                return 0;
-            }
-
-            dmax--;
-            dest++;
-            src++;
-        }
-    }
-
-    /*
-     * the entire src was not copied, so null the string
-     */
-    fputs("strcat_s: not enough "
-          "space for src",
-          stderr);
-
-    return -1;
-}
-
 int write_and_close_socket(int client_fd, const char responseMessage[], size_t messageSize) {
-    ssize_t wrote;
-    int closed_code;
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    wrote = send(client_fd, responseMessage, messageSize - 1, 0 );
-    closed_code = closesocket(client_fd);
+    int wrote = send(client_fd, responseMessage, (int)messageSize - 1, 0 );
+    int closed_code = closesocket(client_fd);
 #else
-    wrote = write(client_fd, responseMessage, messageSize - 1);
-    closed_code = close(client_fd);
+    ssize_t wrote = write(client_fd, responseMessage, messageSize - 1);
+    int closed_code = close(client_fd);
 #endif
     return wrote == -1 || closed_code == -1 ? -1 : 0;
 }
 
 int serve(char **response) {
-#define STD_ERROR_HANDLER(code)                                  \
-            if((code) == -1) {                                   \
-                const int _c = fputs(strerror(errno), stderr);   \
-                if (_c == EOF) return _c;                        \
-                return code == EXIT_SUCCESS? EXIT_FAILURE: code; \
+#define STD_ERROR_HANDLER(code)                                       \
+            if((code) == -1) {                                        \
+                const int _c = fputs(strerror(errno), stderr);        \
+                if (_c == EOF) return _c;                             \
+                return code == EXIT_SUCCESS? EXIT_FAILURE: (int)code; \
             } else
 
     struct addrinfo hint = {0}, *p, *info = NULL;
-    int code, sockfd;
+    int code;
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+    unsigned long long
+#else
+    int
+#endif
+    sockfd;
     size_t current_size = PIPE_BUF;
     struct sockaddr_storage client_addr;
     socklen_t addr_size = sizeof client_addr;
@@ -249,13 +173,17 @@ int serve(char **response) {
     if (iResult != 0) {
         const int _code = fprintf(stderr, "WSAStartup failed: %d\n", iResult);
         if (_code == EOF) return _code;
-        return code == EXIT_SUCCESS? EXIT_FAILURE: code;
+        return _code == EXIT_SUCCESS? EXIT_FAILURE: _code;
     }
 #endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
 
     hint.ai_family = AF_INET;
     hint.ai_socktype = SOCK_STREAM;
-    hint.ai_flags = AI_PASSIVE | SOCK_NONBLOCK;
+    hint.ai_flags = AI_PASSIVE
+#if !defined(_WIN32) && !defined(__WIN32__) && !defined(__WINDOWS__)
+                                                 | SOCK_NONBLOCK
+#endif
+        ;
     code = getaddrinfo(NULL, PORT_TO_BIND_S, &hint, &info);
     if (code != 0) {
         fputs(gai_strerror(code), stderr);
@@ -267,7 +195,7 @@ int serve(char **response) {
         if (sockfd == -1) {
             continue;
         }
-        code = bind(sockfd, p->ai_addr, p->ai_addrlen);
+        code = bind(sockfd, p->ai_addr, (int)p->ai_addrlen);
         if (code == -1) {
             const int _code = fputs(strerror(code), stderr);
             if (_code == EOF) return _code;
@@ -288,12 +216,18 @@ int serve(char **response) {
 
     while (true) {
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-        int
+        SOCKET
 #else
         ssize_t
 #endif
                 bytes, total_bytes = 0;
-        const int client_fd = accept(sockfd, (struct sockaddr *) &client_addr, &addr_size);
+        const
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+            SOCKET
+#else
+            int
+#endif
+                client_fd = accept(sockfd, (struct sockaddr *) &client_addr, &addr_size);
         if (client_fd == -1) {
             const int _code = fputs(strerror(code), stderr);
             if (_code == EOF) return _code;
@@ -303,7 +237,12 @@ int serve(char **response) {
 
         /* memset(pipe_buf, 0, PIPE_BUF); */
         do {
-            bytes = read(client_fd, pipe_buf, PIPE_BUF);
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+          bytes = recv(client_fd, pipe_buf, PIPE_BUF, 0);
+#else
+          bytes = read(client_fd, pipe_buf, PIPE_BUF);
+#endif
+
             printf("bytes: %ld\n", bytes);
             if (bytes == -1) {
                 const int _code = fputs(strerror(errno), stderr);

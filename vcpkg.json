@@ -2,6 +2,7 @@
   "name": "cauthflow",
   "version-string": "0.0.1",
   "dependencies": [
+    "curl",
     "c89stringutils",
     "parson",
     "randomstr"
