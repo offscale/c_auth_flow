@@ -38,6 +38,7 @@ char* strsep(char** stringp, const char* delim)
 }
 
 #else
+
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -51,6 +52,7 @@ char* strsep(char** stringp, const char* delim)
 #include "macros.h"
 
 #ifndef SOCK_NONBLOCK
+
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/syslimits.h>
@@ -128,8 +130,7 @@ void append(char *s, char c) {
 }
 
 errno_t
-strcat_s (char * dest, rsize_t dmax, const char * src)
-{
+strcat_s(char *dest, rsize_t dmax, const char *src) {
     rsize_t orig_dmax;
     char *orig_dest;
     const char *overlap_bumper;
@@ -207,8 +208,8 @@ strcat_s (char * dest, rsize_t dmax, const char * src)
      * the entire src was not copied, so null the string
      */
     fputs("strcat_s: not enough "
-                                       "space for src",
-                 stderr);
+          "space for src",
+          stderr);
 
     return -1;
 }
@@ -234,12 +235,12 @@ int serve(char **response) {
                 return code == EXIT_SUCCESS? EXIT_FAILURE: code; \
             } else
 
-    struct addrinfo  hint = { 0 }, *p, *info = NULL;
+    struct addrinfo hint = {0}, *p, *info = NULL;
     int code, sockfd;
     size_t current_size = PIPE_BUF;
     struct sockaddr_storage client_addr;
     socklen_t addr_size = sizeof client_addr;
-    char pipe_buf[PIPE_BUF+1];
+    char pipe_buf[PIPE_BUF + 1];
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     /* Initialize Winsock */
@@ -252,16 +253,16 @@ int serve(char **response) {
     }
 #endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
 
-    hint.ai_family =  AF_INET;
+    hint.ai_family = AF_INET;
     hint.ai_socktype = SOCK_STREAM;
     hint.ai_flags = AI_PASSIVE | SOCK_NONBLOCK;
     code = getaddrinfo(NULL, PORT_TO_BIND_S, &hint, &info);
     if (code != 0) {
         fputs(gai_strerror(code), stderr);
-        return code == EXIT_SUCCESS ?  EXIT_FAILURE : code;
+        return code == EXIT_SUCCESS ? EXIT_FAILURE : code;
     }
 
-    for(p = info; p ; p = p->ai_next) {
+    for (p = info; p; p = p->ai_next) {
         sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (sockfd == -1) {
             continue;
@@ -285,13 +286,13 @@ int serve(char **response) {
 
     /*if (*response == NULL) *response = malloc(sizeof(char)*PIPE_BUF+1);*/
 
-    while(true) {
+    while (true) {
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
         int
 #else
         ssize_t
 #endif
-        bytes, total_bytes=0;
+                bytes, total_bytes = 0;
         const int client_fd = accept(sockfd, (struct sockaddr *) &client_addr, &addr_size);
         if (client_fd == -1) {
             const int _code = fputs(strerror(code), stderr);
@@ -302,39 +303,39 @@ int serve(char **response) {
 
         /* memset(pipe_buf, 0, PIPE_BUF); */
         do {
-            puts("before read");
             bytes = read(client_fd, pipe_buf, PIPE_BUF);
-            printf("read bytes: %ld\n", bytes);
+            printf("bytes: %ld\n", bytes);
             if (bytes == -1) {
                 const int _code = fputs(strerror(errno), stderr);
-                puts("bytes == -1");
                 if (_code == EOF) return _code;
-            }
-            else if ( bytes > 0 ) {
-                const size_t new_size = total_bytes + bytes;
-                puts("bytes > 0");
-                if (new_size > current_size) {
-                    puts("b4 realloc");
+            } else if (bytes > 0) {
+                const size_t new_size = total_bytes + bytes + 1;
+                printf("b4 current_size: %ld\n"
+                       "new_size: %ld\n"
+                       "b4 total_bytes: %ld\n",
+                       current_size, new_size, total_bytes);
+                if (new_size > current_size + 1) {
+                    printf("b4 sizeof response / sizeof *response[0]: %ld\n", sizeof response / sizeof *response[0]);
                     *response = realloc(*response, new_size + 1);
-                    puts("l8 realloc");
+                    printf("l8 sizeof response / sizeof *response[0]: %ld\n", sizeof *response);
                     if (*response == NULL) {
                         const int _code = fputs("OOM", stderr);
                         if (_code == EOF) return _code;
                         return EXIT_FAILURE;
                     }
                 }
-                puts("b4 memcpy");
                 memcpy(*response + total_bytes, pipe_buf, bytes);
-                puts("l8 memcpy");
                 total_bytes += bytes;
                 current_size = total_bytes;
+                printf("l8 current_size: %ld\n"
+                       "l8 total_bytes: %ld\n", current_size, total_bytes);
             }
             if (bytes < PIPE_BUF)
                 break;
             /*printf("read bytes: %ld\n"
                    "buffer: %s\n", bytes, *response);
             fflush(stdout);*/
-        } while(bytes > 0);
+        } while (bytes > 0);
 
         if (*response != NULL) {
             (*response)[total_bytes] = '\0';
@@ -345,7 +346,7 @@ int serve(char **response) {
 #else
                 sleep(
 #endif
-                100);
+                        50);
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
                 WSACleanup();
 #endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
@@ -362,46 +363,52 @@ void
 query_into_auth_response(struct AuthenticationResponse *authentication_response, const char *var, const char *val);
 
 struct AuthenticationResponse wait_for_oauth2_redirect() {
-   struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
-   char *response = calloc(PIPE_BUF, sizeof(char));
-   const int code = serve(&response);
-   if (code != EXIT_SUCCESS) {
-       fputs("serve() failed", stderr);
-       exit(code);
-   } else {
-        /* querystring parsing */
-        char *query = strdup(response), *tokens = query, *p;
-       fputs("serve() succeeded", stderr);
+    struct AuthenticationResponse authentication_response = {NULL, NULL, NULL};
+    char *response = calloc(PIPE_BUF + 1, sizeof(char));
+    if (response == NULL) {
+        const int _code = fputs("OOM", stderr);
+        if (_code == EOF) exit(_code);
+        exit(EAI_MEMORY);
+    } else {
+        const int code = serve(&response);
+        if (code != EXIT_SUCCESS) {
+            fputs("serve() failed", stderr);
+            exit(code);
+        } else {
+            /* querystring parsing */
+            char *query = strdup(response), *tokens = query, *p;
+            fputs("serve() succeeded", stderr);
 
-       while ((p = strsep(&tokens, "&\n"))) {
-            char *var = strtok(p, "="),
-                    *val = NULL;
-            if (var && (val = strtok(NULL, "="))){
-                size_t i;
-                bool found_space=false;
-                for(i=0; val[i] != '\0'; i++)
-                    if(isspace(val[i])) {
-                        found_space = true;
+            while ((p = strsep(&tokens, "&\n"))) {
+                char *var = strtok(p, "="),
+                        *val = NULL;
+                if (var && (val = strtok(NULL, "="))) {
+                    size_t i;
+                    bool found_space = false;
+                    for (i = 0; val[i] != '\0'; i++)
+                        if (isspace(val[i])) {
+                            found_space = true;
+                            break;
+                        }
+                    if (found_space) {
+                        val[i] = '\0';
+                        query_into_auth_response(&authentication_response, var, val);
                         break;
-                    }
-                if (found_space) {
-                    val[i] = '\0';
-                    query_into_auth_response(&authentication_response, var, val);
-                    break;
-                } else query_into_auth_response(&authentication_response, var, val);;
-            } else
-                fputs("<empty field>\n", stderr);
-        }
+                    } else query_into_auth_response(&authentication_response, var, val);;
+                } else
+                    fputs("<empty field>\n", stderr);
+            }
 
-        free(query);
-        free(response);
+            free(query);
+            free(response);
+        }
     }
-   return authentication_response;
+    return authentication_response;
 }
 
 void
 query_into_auth_response(struct AuthenticationResponse *authentication_response, const char *var, const char *val) {
-    if (var[0] == 'G' && var[1] == 'E' && var[2] == 'T' && var[3] == ' ' )
+    if (var[0] == 'G' && var[1] == 'E' && var[2] == 'T' && var[3] == ' ')
         (*authentication_response).secret = strdup(val);
     else if (strcmp(var, "code") == 0) (*authentication_response).code = strdup(val);
     else if (strcmp(var, "scope") == 0) (*authentication_response).scope = strdup(val);
