@@ -1,6 +1,7 @@
 /* Reference: https://rosettacode.org/wiki/Hello_world/Web_server#C */
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <cauthflow_configure.h>
 #include "tiny_web_server.h"
@@ -10,7 +11,6 @@
 #include <intrin.h>
 #include <ws2tcpip.h>
 #include <winsock2.h>
-#include <assert.h>
 typedef SSIZE_T ssize_t;
 #define PIPE_BUF 512
 #define strdup _strdup
@@ -60,13 +60,17 @@ char* strsep(char** stringp, const char* delim)
 #ifndef SOCK_NONBLOCK
 
 #include <fcntl.h>
-#include <errno.h>
 #include <sys/syslimits.h>
 
 # define SOCK_NONBLOCK O_NONBLOCK
 #endif /* ! SOCK_NONBLOCK */
 
 #endif
+
+#ifdef __clang__
+#include <malloc/malloc.h>
+#define malloc_usable_size malloc_size
+#endif /* __clang__ */
 
 const char responseOk[] = "HTTP/1.0 200 OK\r\n"
                           "Content-Type: text/plain\r\n"
@@ -276,7 +280,7 @@ int serve(char **response) {
                 if (new_size > current_size + 1) {
                     printf("b4 malloc_usable_size(*response): %"DEBUG_NUM_SEP"\n", malloc_usable_size(*response));
                     response_buf = realloc(*response, new_size + 1);
-                    printf("l8 malloc_usable_size(*response): %"DEBUG_NUM_SEP"\n", malloc_usable_size(*response));
+                    printf("l8 malloc_usable_size(response_buf): %"DEBUG_NUM_SEP"\n", malloc_usable_size(response_buf));
                     if (*response == NULL) {
                         const int _code = fputs("OOM", stderr);
                         if (_code == EOF) return _code;
