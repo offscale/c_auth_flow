@@ -358,8 +358,8 @@ struct AuthenticationResponse wait_for_oauth2_redirect() {
       fputs("serve() succeeded\n", stderr);
 
       while ((p = strsep(&tokens, "&\n"))) {
-        char *var = strtok_s(p, "=", &buf), *val = NULL;
-        if (var && (val = strtok_s(NULL, "=", &buf))) {
+        char *var = strtok_r(p, "=", &buf), *val = NULL;
+        if (var && (val = strtok_r(NULL, "=", &buf))) {
           size_t i;
           bool found_space = false;
           for (i = 0; val[i] != '\0'; i++)
