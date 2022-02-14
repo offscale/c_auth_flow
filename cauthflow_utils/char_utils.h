@@ -1,8 +1,8 @@
 #ifndef OAUTH2_CHAR_UTILS_H
 #define OAUTH2_CHAR_UTILS_H
 
-#include <string.h>
 #include "cauthflow_utils_export.h"
+#include <string.h>
 
 #if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>
@@ -25,7 +25,7 @@ extern CAUTHFLOW_UTILS_EXPORT bool is_comma(char);
 
 extern CAUTHFLOW_UTILS_EXPORT bool is_colon(char);
 
-extern CAUTHFLOW_UTILS_EXPORT bool is_keyword(const char*);
+extern CAUTHFLOW_UTILS_EXPORT bool is_keyword(const char *);
 
 extern CAUTHFLOW_UTILS_EXPORT bool is_alpha(char);
 

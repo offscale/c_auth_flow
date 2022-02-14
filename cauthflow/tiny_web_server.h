@@ -1,7 +1,7 @@
 #ifndef OAUTH2_TINY_WEB_SERVER_H
 #define OAUTH2_TINY_WEB_SERVER_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 #include <cstdbool>
 extern "C" {
 #elif __STDC_VERSION__ >= 199901L
@@ -10,8 +10,8 @@ extern "C" {
 #include <cauthflow_stdbool.h>
 #endif /* __cplusplus */
 
-#include <string.h>
 #include "cauthflow_export.h"
+#include <string.h>
 
 extern CAUTHFLOW_EXPORT const char responseOk[];
 extern CAUTHFLOW_EXPORT const char responseErr[];
@@ -21,15 +21,15 @@ extern CAUTHFLOW_EXPORT const char responseErr[];
    This is doing what startHttpServer is doing
    in PHP. */
 struct AuthenticationResponse {
-    const char *secret, *code, *scope;
+  const char *secret, *code, *scope;
 };
 
-extern CAUTHFLOW_EXPORT void split_querystring(const char*);
+extern CAUTHFLOW_EXPORT void split_querystring(const char *);
 
+extern CAUTHFLOW_EXPORT struct AuthenticationResponse
+wait_for_oauth2_redirect();
 
-extern CAUTHFLOW_EXPORT struct AuthenticationResponse wait_for_oauth2_redirect();
-
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

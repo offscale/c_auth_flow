@@ -44,7 +44,7 @@ target_compile_options(
         "${PROJECT_NAME}_compiler_flags"
         INTERFACE
         "$<${gcc_like}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused;-Wno-format-nonliteral;-pedantic>>"
-        #"$<${msvc}:$<BUILD_INTERFACE:-W3;-WX;-Zi;-permissive->>"
+        "$<${msvc}:$<BUILD_INTERFACE:-W3;-WX;-Zi;-permissive->>"
 )
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")

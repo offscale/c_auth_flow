@@ -7,7 +7,7 @@
  * https://developers.google.com/identity/protocols/cauthflow/native-app
  */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 #include <ctime>
 extern "C" {
 #else
@@ -18,26 +18,31 @@ extern "C" {
 #include "cauthflow_google_auth_export.h"
 
 struct GoogleCloudProject {
-    const char *projectNumber;
-    const char *projectId;
-    const char *lifecycleState;
-    const char *name;
-    time_t google_access_token_expiry;
-    const char *google_access_token;
-    const char *google_refresh_token;
+  const char *projectNumber;
+  const char *projectId;
+  const char *lifecycleState;
+  const char *name;
+  time_t google_access_token_expiry;
+  const char *google_access_token;
+  const char *google_refresh_token;
 };
 
 struct StrStr {
-    const char *first, *second;
+  const char *first, *second;
 };
 
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct GoogleCloudProject get_google_auth(const char*, const char*, const char*);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct StrStr auth_flow_user_approval(const char*);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value * auth_flow_get_tokens(const char*, const char*, const char *, const char *);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value * auth_flow_get_tokens_from_refresh(const char*, const char*, const char *);
-extern CAUTHFLOW_GOOGLE_AUTH_EXPORT const JSON_Object * get_project(const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct GoogleCloudProject
+get_google_auth(const char *, const char *, const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct StrStr
+auth_flow_user_approval(const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value *
+auth_flow_get_tokens(const char *, const char *, const char *, const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value *
+auth_flow_get_tokens_from_refresh(const char *, const char *, const char *);
+extern CAUTHFLOW_GOOGLE_AUTH_EXPORT const JSON_Object *
+get_project(const char *);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 } /*extern "C"*/
 #endif
 

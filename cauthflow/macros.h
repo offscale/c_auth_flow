@@ -4,7 +4,7 @@
 /* marker for entry into each CPP area */
 #define ENTRYPOINT
 #define INTERNAL static
-#define MIN(x,y)    ((x <= y) ? x : y)
+#define MIN(x, y) ((x <= y) ? x : y)
 
 #define XSTR(s) STR(s)
 #define STR(s) #s
