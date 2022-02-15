@@ -46,9 +46,7 @@ char *strsep(char **stringp, const char *delim) {
 #define DEBUG_NUM_SEP "lu"
 
 #include <ctype.h>
-#include <err.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -61,6 +59,10 @@ char *strsep(char **stringp, const char *delim) {
 
 #define SOCK_NONBLOCK O_NONBLOCK
 #endif /* ! SOCK_NONBLOCK */
+
+#if defined(__linux) || defined(__linux__) || defined(linux)
+#include <limits.h>
+#endif /* defined(__linux) || defined(__linux__) || defined(linux) */
 
 #endif
 

@@ -7,7 +7,7 @@
 #include <c89stringutils_string_extras.h>
 #include <stdlib.h>
 
-#ifdef __linux__
+#if defined(__linux) || defined(__linux__) || defined(linux)
 #include <resolv.h>
 #include <stdio.h>
 
@@ -26,7 +26,7 @@
 #endif
 
 static void open_browser(const char *url) {
-#ifdef __linux__
+#if defined(__linux) || defined(__linux__) || defined(linux)
   /* On linux xdg-open is a command that opens the
      preferred application for the type of file or url.
      For more information use: man xdg-open on the
