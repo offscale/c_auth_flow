@@ -155,19 +155,16 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 ###########
 
 # install rules
+include(GNUInstallDirs)
 set(installable_libs
-        "${LIBRARY_NAME}" "${PROJECT_NAME}_compiler_flags"
-        "${PROJECT_NAME}_utils" "${PROJECT_NAME}_google_auth")
+        "${LIBRARY_NAME}" "${PROJECT_NAME}_utils"
+        "${PROJECT_NAME}_google_auth" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
 install(TARGETS ${installable_libs}
-        DESTINATION "${INSTALL_LIB_PREFIX}lib"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         EXPORT "${LIBRARY_NAME}Targets")
-install(TARGETS ${installable_libs}
-        RUNTIME DESTINATION "${INSTALL_LIB_PREFIX}bin"
-        LIBRARY DESTINATION "${INSTALL_LIB_PREFIX}lib"
-        ARCHIVE DESTINATION "${INSTALL_LIB_PREFIX}lib")
 install(FILES "${_export_file}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" ${Header_Files}
-        DESTINATION "include")
-install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "share/${LIBRARY_NAME}")
+        TYPE "INCLUDE")
+install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}")

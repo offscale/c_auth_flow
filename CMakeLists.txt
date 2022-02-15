@@ -19,21 +19,6 @@ endif ()
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-if (NOT DEFINED CMAKE_BUILD_TYPE)
-    if (CMAKE_RC_FLAGS_RELEASE)
-        set(CMAKE_BUILD_TYPE "Release")
-    else ()
-        set(CMAKE_BUILD_TYPE "Debug")
-    endif ()
-endif (NOT DEFINED CMAKE_BUILD_TYPE)
-
-set(INSTALL_LIB_PREFIX "")
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(INSTALL_LIB_PREFIX "debug/")
-    endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-endif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-
 add_library("${PROJECT_NAME}_compiler_flags" INTERFACE)
 target_compile_features("${PROJECT_NAME}_compiler_flags" INTERFACE "c_std_${CMAKE_C_STANDARD}")
 
@@ -66,9 +51,10 @@ if (BUILD_TESTING)
     add_subdirectory("${PROJECT_NAME}_tests")
 endif (BUILD_TESTING)
 
+include(GNUInstallDirs)
 install(
         FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.h"
-        DESTINATION "include"
+        TYPE "INCLUDE"
 )
 
 include(InstallRequiredSystemLibraries)
@@ -114,4 +100,4 @@ write_basic_package_version_file(
         COMPATIBILITY AnyNewerVersion
 )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-        DESTINATION "share/${PROJECT_NAME}")
+        TYPE "DATA")

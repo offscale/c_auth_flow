@@ -75,4 +75,5 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
-install(FILES "${_export_file}" ${Header_Files} DESTINATION "include")
+include(GNUInstallDirs)
+install(FILES "${_export_file}" ${Header_Files} TYPE "INCLUDE")
