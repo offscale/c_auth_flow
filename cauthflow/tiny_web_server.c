@@ -62,6 +62,10 @@ char *strsep(char **stringp, const char *delim) {
 
 #if defined(__linux) || defined(__linux__) || defined(linux)
 #include <limits.h>
+#ifndef PIPE_BUF
+#include <linux/pipe_fs_i.h>
+#define PIPE_BUF PIPE_SIZE
+#endif /* ! PIPE_BUF */
 #endif /* defined(__linux) || defined(__linux__) || defined(linux) */
 
 #endif
