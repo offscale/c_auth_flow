@@ -10,12 +10,28 @@ source_group("Source Files" FILES "${Source_Files}")
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
 find_package(unofficial-parson CONFIG REQUIRED)
+find_package(libcurl-simple-https CONFIG REQUIRED)
+
+if (MSVC)
+  find_package(CURL CONFIG REQUIRED)
+  set(CURL_LINK_LIBRARIES CURL::libcurl)
+else ()
+  include(${CMAKE_SOURCE_DIR}/cmake/modules/FindCurlCustom.cmake)
+  get_curl(CURL_LINK_LIBRARIES)
+endif ()
+
+target_link_libraries(
+        "${LIBRARY_NAME}"
+        PUBLIC
+        "${CURL_LINK_LIBRARIES}"
+        "libcurl-simple-https"
+        "unofficial::parson::parson"
+)
+
 target_link_libraries(
         "${LIBRARY_NAME}"
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
-        "unofficial::parson::parson"
-        "libcurl-simple-https"
 )
 
 target_include_directories(

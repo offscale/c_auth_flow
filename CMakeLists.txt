@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.3)
 project(cauthflow VERSION 0.0.1 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 90)
@@ -42,7 +42,6 @@ configure_file(
         "${PROJECT_NAME}Config.h"
 )
 
-add_subdirectory(libcurl-simple-https)
 add_subdirectory("${PROJECT_NAME}_utils")
 add_subdirectory("${PROJECT_NAME}")
 

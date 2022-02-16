@@ -18,21 +18,6 @@ target_include_directories(
         "$<INSTALL_INTERFACE:include>"
 )
 
-if (MSVC)
-  find_package(CURL CONFIG REQUIRED)
-  set(CURL_LINK_LIBRARIES CURL::libcurl)
-else ()
-  include(${CMAKE_SOURCE_DIR}/cmake/modules/FindCurlCustom.cmake)
-  get_curl(CURL_LINK_LIBRARIES)
-endif ()
-
-target_link_libraries(
-        "${LIBRARY_NAME}"
-        PUBLIC
-        "${CURL_LINK_LIBRARIES}"
-        "libcurl-simple-https"
-)
-
 find_path(RANDOMSTR_INCLUDE_DIRS "randomstr.h")
 find_path(C89STRINGUTILS_INCLUDE_DIRS "c89stringutils_string_extras.h")
 
@@ -40,13 +25,14 @@ target_include_directories(
         "${LIBRARY_NAME}"
         PRIVATE
         "${RANDOMSTR_INCLUDE_DIRS}"
-        "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
+        # "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
         "${C89STRINGUTILS_INCLUDE_DIRS}"
 )
 
 #find_package(libcurl-simple-https CONFIG REQUIRED)
-find_package(unofficial-parson CONFIG REQUIRED)
-set(_libs "unofficial::parson::parson")
+#find_package(unofficial-parson CONFIG REQUIRED)
+#set(_libs "unofficial::parson::parson")
+set(_libs "")
 if (APPLE)
   list(APPEND _libs "-framework CoreServices")
 endif (APPLE)

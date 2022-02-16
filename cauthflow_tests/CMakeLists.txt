@@ -31,8 +31,6 @@ target_include_directories(
         "${DOWNLOAD_DIR}"
 )
 
-#add_subdirectory(../cauthflow/cauthflow_google_auth/libcurl-simple-https)
-
 target_link_libraries(
         "${EXEC_NAME}"
         PRIVATE
