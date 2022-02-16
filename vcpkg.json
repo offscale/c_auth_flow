@@ -4,7 +4,6 @@
   "dependencies": [
     "c89stringutils",
     "parson",
-    "randomstr",
-    "libcurl-simple-https"
+    "randomstr"
   ]
 }
