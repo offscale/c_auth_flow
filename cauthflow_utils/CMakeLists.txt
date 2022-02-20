@@ -10,7 +10,7 @@ source_group("Source Files" FILES "${Source_Files}")
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
 find_package(unofficial-parson CONFIG REQUIRED)
-#find_package(libcurl-simple-https CONFIG REQUIRED)
+find_package(libcurl-simple-https CONFIG REQUIRED)
 
 if (MSVC)
   find_package(CURL CONFIG REQUIRED)

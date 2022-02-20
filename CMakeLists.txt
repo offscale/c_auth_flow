@@ -42,7 +42,7 @@ configure_file(
         "${PROJECT_NAME}Config.h"
 )
 
-add_subdirectory("libcurl-simple-https")
+# add_subdirectory("libcurl-simple-https")
 add_subdirectory("${PROJECT_NAME}_utils")
 add_subdirectory("${PROJECT_NAME}")
 

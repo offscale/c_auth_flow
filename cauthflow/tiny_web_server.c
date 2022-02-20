@@ -146,11 +146,11 @@ void append(char *s, char c) {
 int write_and_close_socket(int client_fd, const char responseMessage[],
                            size_t messageSize) {
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-  int wrote = send(client_fd, responseMessage, (int)messageSize - 1, 0);
-  int closed_code = closesocket(client_fd);
+  const int wrote = send(client_fd, responseMessage, (int)messageSize - 1, 0);
+  const int closed_code = closesocket(client_fd);
 #else
-  ssize_t wrote = write(client_fd, responseMessage, messageSize - 1);
-  int closed_code = close(client_fd);
+  const ssize_t wrote = write(client_fd, responseMessage, messageSize - 1);
+  const int closed_code = close(client_fd);
 #endif
   return wrote == -1 || closed_code == -1 ? -1 : 0;
 }
@@ -270,8 +270,6 @@ int serve(char **response) {
 #else
       bytes = read(client_fd, pipe_buf, PIPE_BUF);
 #endif
-
-      printf("bytes: %" DEBUG_NUM_SEP "\n", bytes);
       if (bytes == -1) {
         char error_s[BUFSIZ];
         strerror_r(code, error_s, BUFSIZ);
@@ -282,16 +280,8 @@ int serve(char **response) {
         }
       } else if (bytes > 0) {
         const size_t new_size = total_bytes + bytes + 1;
-        printf("b4 current_size: %" DEBUG_NUM_SEP "\n"
-               "new_size: %" DEBUG_NUM_SEP "\n"
-               "b4 total_bytes: %" DEBUG_NUM_SEP "\n",
-               current_size, new_size, total_bytes);
         if (new_size > current_size + 1) {
-          printf("b4 malloc_usable_size(*response): %" DEBUG_NUM_SEP "\n",
-                 malloc_usable_size(*response));
           response_buf = realloc(*response, new_size + 1);
-          printf("l8 malloc_usable_size(response_buf): %" DEBUG_NUM_SEP "\n",
-                 malloc_usable_size(response_buf));
           if (*response == NULL) {
             const int _code = fputs("OOM", stderr);
             if (_code == EOF)
@@ -304,9 +294,6 @@ int serve(char **response) {
         memcpy(*response + total_bytes, pipe_buf, bytes);
         total_bytes += bytes;
         current_size = total_bytes;
-        printf("l8 current_size: %" DEBUG_NUM_SEP "\n"
-               "l8 total_bytes: %" DEBUG_NUM_SEP "\n",
-               current_size, total_bytes);
       }
       if (bytes < PIPE_BUF)
         break;
@@ -326,7 +313,7 @@ int serve(char **response) {
 #else
         sleep(
 #endif
-              50);
+              3);
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
         WSACleanup();
 #endif /* defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__) */
