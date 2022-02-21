@@ -1,0 +1,19 @@
+FROM alpine
+
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1
+
+RUN apk add --no-cache build-base zip unzip curl git ninja cmake perl openssl-dev && \
+    git clone -b 'project0' https://github.com/offscale/vcpkg /opt/vcpkg && \
+    /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+COPY . /cauthflow
+
+WORKDIR /cauthflow/build
+
+RUN cmake -DCMAKE_BUILD_TYPE="Debug" \
+          -DCMAKE_TOOLCHAIN_FILE='/opt/vcpkg/scripts/buildsystems/vcpkg.cmake' \
+          -DCMAKE_MAKE_PROGRAM="$(which make)" \
+          -DCMAKE_C_COMPILER="$(which gcc)" .. && \
+    cmake --build .
+
+CMD ctest .
