@@ -1,0 +1,21 @@
+FROM debian
+
+ADD 'https://github.com/Kitware/CMake/releases/download/v3.23.0-rc1/cmake-3.23.0-rc1-linux-x86_64.sh' '/tmp/cmake.sh'
+
+RUN sh /tmp/cmake.sh --prefix='/usr/local' --skip-license
+
+RUN apt-get update -qq && \
+    apt-get install -y gcc make pkg-config libc-dev libssl-dev libcurl4-openssl-dev git && \
+    git clone -b 'project0' https://github.com/offscale/vcpkg /opt/vcpkg && \
+    /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+COPY . /cauthflow
+
+WORKDIR /cauthflow/build
+
+RUN cmake -DCMAKE_BUILD_TYPE="Debug" \
+    -DCMAKE_TOOLCHAIN_FILE='/opt/vcpkg/scripts/buildsystems/vcpkg.cmake' \
+    .. && \
+    cmake --build .
+
+CMD ctest .
