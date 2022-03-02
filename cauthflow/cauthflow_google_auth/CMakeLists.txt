@@ -25,7 +25,6 @@ target_include_directories(
         "${LIBRARY_NAME}"
         PRIVATE
         "${RANDOMSTR_INCLUDE_DIRS}"
-        # "${LIBCURL_SIMPLE_HTTPS_INCLUDE_DIRS}"
         "${C89STRINGUTILS_INCLUDE_DIRS}"
 )
 

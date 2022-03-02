@@ -1,10 +1,10 @@
 /* Reference
  * https://github.com/microsoft/cpprestsdk/blob/7fbb08c491f9c8888cc0f3d86962acb3af672772/Release/samples/Oauth1Client/Oauth1Client.cpp
  */
-#include <c89stringutils_string_extras.h>
 #include <stdlib.h>
 
 #if defined(__linux) || defined(__linux__) || defined(linux)
+#include <c89stringutils_string_extras.h>
 #include <resolv.h>
 #include <stdio.h>
 
@@ -16,9 +16,12 @@
 
 #elif defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
 
-#include <Shellapi.h>
-#include <ShlObj.h>
+#include <cauthflow_configure.h>
+#include <windef.h>
 #include <winbase.h>
+#include <basetsd.h>
+#include <ShlObj.h>
+#include <Shellapi.h>
 
 #endif
 
@@ -35,6 +38,7 @@ void open_browser(const char *url) {
   asprintf(&browser_cmd_string, "xdg-open \"%s\"", url);
   puts(browser_cmd_string);
   (void)system(browser_cmd_string);
+  free(browser_cmd_string);
 
 #else
 #  if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) && defined(__MACH__)
