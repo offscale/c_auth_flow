@@ -1,15 +1,10 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
-set(Header_Files
-        "macros.h"
-        "open_browser.h"
-        "tiny_web_server.h"
-)
-
+set(Header_Files "open_browser.h" "tiny_web_server.h")
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "tiny_web_server.c")
+set(Source_Files "open_browser.c" "tiny_web_server.c")
 source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")

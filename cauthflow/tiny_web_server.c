@@ -86,63 +86,6 @@ const char responseErr[] = "HTTP/1.0 400 Bad Request\r\n"
                            "Bad Request\r\n";
 const static char STOP_ON_STARTSWITH[] = "GET " EXPECTED_PATH;
 
-/**
- * Percent-decodes a string in-place.
- */
-static void percentDecode(char *s) {
-  /* TODO */
-  puts(s);
-}
-
-/**
- * Returns a pointer to the beginning of the a key-value pair, writing
- * a NUL delimiter to the input.  Advances input to the next key-value pair.
- */
-char *keyValuePair(char **input) { return strsep(input, "&"); }
-
-/**
- * Splits keyValue into two strings, and performs percent-decoding on both.
- * Returns a pointer to the key, and advances keyValue to point to the value.
- */
-char *extractKey(char **keyValue) {
-  char *key = strsep(keyValue, "=");
-  percentDecode(key);
-  percentDecode(*keyValue);
-  return key;
-}
-
-/*std::map<std::string, std::string>
-split_querystring(std::string const & querystring )
-{
-    std::map<std::string, std::string> result;
-    size_t lastpos = 0;
-    std::string key;
-    std::string value;
-    for(size_t ii=0; ii < querystring.size(); ii++ ) {
-        if ( querystring[ii] == '=' ) {
-            key = querystring.substr(lastpos, ii-lastpos);
-            lastpos = ii+1;
-        } else if ( querystring[ii] == '&' ) {
-            value = querystring.substr(lastpos, ii-lastpos);
-            result.insert(std::make_pair(key,value));
-            lastpos = ii+1;
-            key.clear();
-            value.clear();
-        }
-    }
-    if ( !key.empty() ) {
-        value = querystring.substr(lastpos);
-        result.insert(std::make_pair(key,value));
-    }
-    return result;
-}*/
-
-void append(char *s, char c) {
-  size_t len = strlen(s);
-  s[len] = c;
-  s[len + 1] = '\0';
-}
-
 int write_and_close_socket(int client_fd, const char responseMessage[],
                            size_t messageSize) {
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
@@ -230,6 +173,7 @@ int serve(char **response) {
 
     break;
   }
+  freeaddrinfo(info);
 
   STD_ERROR_HANDLER(listen(sockfd, MSG_BACKLOG));
 
@@ -387,7 +331,3 @@ void query_into_auth_response(
   else if (strcmp(var, "scope") == 0)
     (*authentication_response).scope = strdup(val);
 }
-
-#ifdef TEST_TINY_WEB_SERVER
-int main() { wait_for_oauth2_redirect(); }
-#endif

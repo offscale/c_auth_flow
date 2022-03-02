@@ -4,9 +4,6 @@
  * https://developers.google.com/identity/protocols/cauthflow/native-app
  */
 
-#define XSTR(s) STR(s)
-#define STR(s) #s
-
 #define DEBUG_SERVER_RESPONSE(name)                                            \
   fprintf(response.status_code == 200 ? stdout : stderr, name ": %ld\t%s\n",   \
           response.status_code, response.body == NULL ? "" : response.body)

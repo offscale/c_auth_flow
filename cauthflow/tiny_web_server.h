@@ -24,13 +24,10 @@ struct AuthenticationResponse {
   const char *secret, *code, *scope;
 };
 
-extern CAUTHFLOW_EXPORT void split_querystring(const char *);
-
-extern CAUTHFLOW_EXPORT struct AuthenticationResponse
-wait_for_oauth2_redirect();
+extern CAUTHFLOW_EXPORT struct AuthenticationResponse wait_for_oauth2_redirect();
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* !OAUTH2_TINY_WEB_SERVER_H */
