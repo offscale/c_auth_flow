@@ -1,5 +1,4 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
 set(Header_Files "${PROJECT_NAME}_stdbool.h" "json_common.h" "cauthflow_types_common.h" "char_utils.h")
 source_group("Header Files" FILES "${Header_Files}")
@@ -37,7 +36,7 @@ target_link_libraries(
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:include>"
 )

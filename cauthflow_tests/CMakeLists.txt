@@ -36,7 +36,7 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
         #"${PROJECT_NAME}_utils"
-        "${PROJECT_NAME}_configure"
+        #"${PROJECT_NAME}_configure"
         "${PROJECT_NAME}_google_auth"
         "${PROJECT_NAME}"
         #"libcurl-simple-https"

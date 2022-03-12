@@ -42,8 +42,10 @@ configure_file(
         "${PROJECT_NAME}Config.h"
 )
 
-# add_subdirectory("libcurl-simple-https")
+add_subdirectory("${PROJECT_NAME}_configure")
 add_subdirectory("${PROJECT_NAME}_utils")
+add_subdirectory("${PROJECT_NAME}_open_browser")
+add_subdirectory("${PROJECT_NAME}_google_auth")
 add_subdirectory("${PROJECT_NAME}")
 
 include(CTest)
@@ -76,13 +78,6 @@ set(CPACK_PACKAGE_CONTACT "https://github.com/offscale/${PROJECT_NAME}")
 
 include(CPack)
 include(CMakePackageConfigHelpers)
-
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-if (BUILD_SHARED_LIBS)
-    set(LIBRARY_TYPE_FLAG "SHARED")
-else ()
-    set(LIBRARY_TYPE_FLAG "STATIC")
-endif ()
 
 # generate the config file that is includes the exports
 configure_package_config_file(

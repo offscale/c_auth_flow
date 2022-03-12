@@ -1,5 +1,4 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
-string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
 set(Header_Files "cauthflow_server.h")
 source_group("Header Files" FILES "${Header_Files}")
@@ -12,7 +11,7 @@ add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<INSTALL_INTERFACE:include>"
 )
@@ -26,29 +25,15 @@ if (USE_OPENSSL)
   target_link_libraries("${LIBRARY_NAME}" PRIVATE "OpenSSL::SSL" "OpenSSL::Crypto")
 endif (USE_OPENSSL)
 
-##########################
-# 1st party dependencies #
-##########################
-
-add_subdirectory("${PROJECT_NAME}_open_browser")
-add_subdirectory("${PROJECT_NAME}_google_auth")
-add_subdirectory("${PROJECT_NAME}_configure")
-
 ###########
 # Linkage #
 ###########
 
-target_link_libraries(
-        "${LIBRARY_NAME}"
-        PUBLIC
-        "${PROJECT_NAME}_utils"
-)
+#target_link_libraries("${LIBRARY_NAME}" PUBLIC "${PROJECT_NAME}_utils")
 
 target_link_libraries(
         "${LIBRARY_NAME}"
         PRIVATE
-        "${PROJECT_NAME}_configure"
-        "${PROJECT_NAME}_open_browser"
         "${PROJECT_NAME}_google_auth"
         "${PROJECT_NAME}_compiler_flags"
 )
@@ -92,7 +77,7 @@ include(GNUInstallDirs)
 set(installable_libs
         "${LIBRARY_NAME}" "${PROJECT_NAME}_utils"
         "${PROJECT_NAME}_google_auth" "${PROJECT_NAME}_open_browser"
-        "${PROJECT_NAME}_compiler_flags")
+        "${PROJECT_NAME}_configure" "${PROJECT_NAME}_compiler_flags")
 if (TARGET "${DEPENDANT_LIBRARY}")
   list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif (TARGET "${DEPENDANT_LIBRARY}")
