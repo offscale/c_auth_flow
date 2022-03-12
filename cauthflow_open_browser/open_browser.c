@@ -25,6 +25,8 @@
 
 #endif
 
+#include "open_browser.h"
+
 void open_browser(const char *url) {
 #if defined(__linux) || defined(__linux__) || defined(linux)
   /* On linux xdg-open is a command that opens the

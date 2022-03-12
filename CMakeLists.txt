@@ -15,9 +15,9 @@ endif ()
 
 # control where the static and shared libraries are built so that on windows
 # we don't need to tinker with the path to run the executable
-#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 add_library("${PROJECT_NAME}_compiler_flags" INTERFACE)
 target_compile_features("${PROJECT_NAME}_compiler_flags" INTERFACE "c_std_${CMAKE_C_STANDARD}")
@@ -42,9 +42,9 @@ configure_file(
         "${PROJECT_NAME}Config.h"
 )
 
+add_subdirectory("${PROJECT_NAME}_open_browser")
 add_subdirectory("${PROJECT_NAME}_configure")
 add_subdirectory("${PROJECT_NAME}_utils")
-add_subdirectory("${PROJECT_NAME}_open_browser")
 add_subdirectory("${PROJECT_NAME}_google_auth")
 add_subdirectory("${PROJECT_NAME}")
 

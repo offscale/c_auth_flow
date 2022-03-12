@@ -17,13 +17,13 @@ file(DOWNLOAD "${GREATEST_URL}" "${GREATEST_FILE}"
 # Test target #
 ###############
 
-set(Header_Files "${CMAKE_CURRENT_SOURCE_DIR}/test_cauthflow.h")
+set(Header_Files "test_cauthflow.h")
 source_group("${EXEC_NAME} Header Files" FILES "${Header_Files}")
 
-set(Source_Files "${CMAKE_CURRENT_SOURCE_DIR}/test.c")
+set(Source_Files "test.c")
 source_group("${EXEC_NAME} Source Files" FILES "${Source_Files}")
 
-add_executable("${EXEC_NAME}" "${Header_Files}" "${GREATEST_FILE}" "${Source_Files}")
+add_executable("${EXEC_NAME}" "${Header_Files}" "${Source_Files}")
 
 target_include_directories(
         "${EXEC_NAME}"
@@ -39,8 +39,8 @@ target_link_libraries(
         #"${PROJECT_NAME}_configure"
         "${PROJECT_NAME}_google_auth"
         "${PROJECT_NAME}"
-        #"libcurl-simple-https"
-        #"${PROJECT_NAME}_google_auth"
 )
 
-add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
+add_test(NAME "${EXEC_NAME}"
+         COMMAND "${EXEC_NAME}"
+         WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")

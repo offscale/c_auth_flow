@@ -6,10 +6,7 @@ source_group("Header Files" FILES "${Header_Files}")
 set(Source_Files "open_browser.c")
 source_group("Source Files" FILES "${Source_Files}")
 
-add_library("${LIBRARY_NAME}"
-        #"${LIBRARY_TYPE_FLAG}"
-        STATIC
-        "${Header_Files}" "${Source_Files}")
+add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
 target_include_directories(
         "${LIBRARY_NAME}"
@@ -25,6 +22,12 @@ target_include_directories(
         "${LIBRARY_NAME}"
         PRIVATE
         "${C89STRINGUTILS_INCLUDE_DIRS}"
+)
+
+target_link_libraries(
+        "${LIBRARY_NAME}"
+        PRIVATE
+        "${PROJECT_NAME}_compiler_flags"
 )
 
 set_target_properties(
