@@ -1,5 +1,5 @@
-#ifndef GOOGLE_AUTH_H
-#define GOOGLE_AUTH_H
+#ifndef CAUTHFLOW_GOOGLE_AUTH_H
+#define CAUTHFLOW_GOOGLE_AUTH_H
 
 /**
  * OAuth2 in C/C++
@@ -8,14 +8,21 @@
  */
 
 #ifdef __cplusplus
+#include <cstdbool>
 #include <ctime>
 extern "C" {
 #else
 #include <time.h>
-#endif
+#if __STDC_VERSION__ >= 199901L
+#include <stdbool.h>
+#else
+#include <cauthflow_stdbool.h>
+#endif /* __STDC_VERSION__ >= 199901L */
+#endif /* __cplusplus */
 #include <parson.h>
 
 #include "cauthflow_google_auth_export.h"
+#include <cauthflow_types_common.h>
 
 struct GoogleCloudProject {
   const char *projectNumber;
@@ -27,14 +34,12 @@ struct GoogleCloudProject {
   const char *google_refresh_token;
 };
 
-struct StrStr {
-  const char *first, *second;
-};
-
 extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct GoogleCloudProject
-get_google_auth(const char *, const char *, const char *);
+get_google_auth(const char *, const char *, const char *,
+                struct StrStr (*)(const char *, const char *));
 extern CAUTHFLOW_GOOGLE_AUTH_EXPORT struct StrStr
-auth_flow_user_approval(const char *);
+auth_flow_user_approval(const char *,
+                        struct StrStr (*)(const char *, const char *));
 extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value *
 auth_flow_get_tokens(const char *, const char *, const char *, const char *);
 extern CAUTHFLOW_GOOGLE_AUTH_EXPORT JSON_Value *
@@ -46,4 +51,4 @@ get_project(const char *);
 } /*extern "C"*/
 #endif
 
-#endif /* GOOGLE_AUTH_H */
+#endif /* !CAUTHFLOW_GOOGLE_AUTH_H */

@@ -1,5 +1,5 @@
-#ifndef OAUTH2_TINY_WEB_SERVER_H
-#define OAUTH2_TINY_WEB_SERVER_H
+#ifndef CAUTHFLOW_SERVER_H
+#define CAUTHFLOW_SERVER_H
 
 #ifdef __cplusplus
 #include <cstdbool>
@@ -11,6 +11,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include "cauthflow_export.h"
+#include <cauthflow_types_common.h>
 #include <string.h>
 
 extern CAUTHFLOW_EXPORT const char responseOk[];
@@ -24,10 +25,14 @@ struct AuthenticationResponse {
   const char *secret, *code, *scope;
 };
 
-extern CAUTHFLOW_EXPORT struct AuthenticationResponse wait_for_oauth2_redirect();
+extern CAUTHFLOW_EXPORT struct StrStr redirect_dance(const char *,
+                                                     const char *);
+
+extern CAUTHFLOW_EXPORT struct AuthenticationResponse
+wait_for_oauth2_redirect();
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !OAUTH2_TINY_WEB_SERVER_H */
+#endif /* !CAUTHFLOW_SERVER_H */

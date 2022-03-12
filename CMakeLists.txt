@@ -6,7 +6,7 @@ cmake_policy(SET CMP0063 NEW)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 if (BUILD_SHARED_LIBS)
     set(LIBRARY_TYPE_FLAG "SHARED")
 else ()

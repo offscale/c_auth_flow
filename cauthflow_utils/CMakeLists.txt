@@ -1,7 +1,7 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
-set(Header_Files "${PROJECT_NAME}_stdbool.h" "json_common.h" "char_utils.h")
+set(Header_Files "${PROJECT_NAME}_stdbool.h" "json_common.h" "cauthflow_types_common.h" "char_utils.h")
 source_group("Header Files" FILES "${Header_Files}")
 
 set(Source_Files "json_common.c" "char_utils.c")

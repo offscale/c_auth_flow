@@ -28,7 +28,7 @@
 #undef C89STRINGUTILS_IMPLEMENTATION
 
 #include <open_browser.h>
-#include <tiny_web_server.h>
+/*#include <cauthflow_server.h>*/
 
 #include <curl_simple_https.h>
 
@@ -38,17 +38,12 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#ifdef bool
-#undef bool
-#endif
-#if __STDC_VERSION__ >= 199901L
-#include <stdbool.h>
+#if defined(__cplusplus) || __STDC_VERSION__ >= 199901L
 typedef long long longest;
 #else
 #define inline
-#include <cauthflow_stdbool.h>
 typedef long longest;
-#endif /* __STDC_VERSION__ >= 199901L */
+#endif /* defined(__cplusplus) || __STDC_VERSION__ >= 199901L */
 
 void no_projects_error();
 
@@ -70,14 +65,15 @@ CURLUcode append_curl_query(CURLU *urlp, const char *fmt, ...) {
  * Authentication flow (including spinning up of local web server, and setting
  * of project ID)
  * */
-extern struct GoogleCloudProject get_google_auth(const char *client_id,
-                                                 const char *client_secret,
-                                                 const char *refresh_token) {
+extern struct GoogleCloudProject
+get_google_auth(const char *client_id, const char *client_secret,
+                const char *refresh_token,
+                struct StrStr (*redirect_handler)(const char *, const char *)) {
   JSON_Object *tokens_obj_json;
 
   if (refresh_token == NULL) {
     const struct StrStr auth_flow_code_resp =
-        auth_flow_user_approval(client_id);
+        auth_flow_user_approval(client_id, redirect_handler);
     const char *redirect_uri = auth_flow_code_resp.first,
                *code = auth_flow_code_resp.second;
 
@@ -118,7 +114,9 @@ extern struct GoogleCloudProject get_google_auth(const char *client_id,
   }
 }
 
-inline struct StrStr auth_flow_user_approval(const char *client_id) {
+struct StrStr auth_flow_user_approval(
+    const char *client_id,
+    struct StrStr (*redirect_handler)(const char *, const char *)) {
   const char *redirect_uri =
       "http://" SERVER_HOST ":" PORT_TO_BIND_S EXPECTED_PATH;
   const char *temporary_secret_state = generate_random_string(10);
@@ -169,33 +167,7 @@ inline struct StrStr auth_flow_user_approval(const char *client_id) {
 
   /* we then need to start our web server and block
      until we get the appropriate response */
-  {
-    const struct AuthenticationResponse oauth_response =
-        wait_for_oauth2_redirect();
-    struct StrStr str_str;
-
-    if (oauth_response.secret == NULL ||
-        strcmp(oauth_response.secret, temporary_secret_state) != 0) {
-      fprintf(stderr,
-              "cauthflow redirect contained the wrong secret state (%s), "
-              "expected: (%s)\n",
-              oauth_response.secret == NULL ? "(NULL)" : oauth_response.secret,
-              temporary_secret_state);
-      exit(EXIT_FAILURE);
-    } else {
-      printf("\n"
-             "struct AuthenticationResponse oauth_response = {\n"
-             "  .scope=\"%s\",\n"
-             "  .secret=\"%s\",\n"
-             "  .code=\"%s\"\n"
-             "};\n",
-             oauth_response.scope, oauth_response.secret, oauth_response.code);
-    }
-
-    str_str.first = redirect_uri;
-    str_str.second = oauth_response.code;
-    return str_str;
-  }
+  return redirect_handler(redirect_uri, temporary_secret_state);
 }
 
 inline JSON_Value *auth_flow_get_tokens(const char *client_id,

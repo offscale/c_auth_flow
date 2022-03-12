@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "tiny_web_server.h"
+#include "cauthflow_server.h"
 #include <cauthflow_configure.h>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
@@ -330,4 +330,33 @@ void query_into_auth_response(
     (*authentication_response).code = strdup(val);
   else if (strcmp(var, "scope") == 0)
     (*authentication_response).scope = strdup(val);
+}
+
+struct StrStr redirect_dance(const char *redirect_uri,
+                             const char *temporary_secret_state) {
+  const struct AuthenticationResponse oauth_response =
+      wait_for_oauth2_redirect();
+  struct StrStr str_str;
+
+  if (oauth_response.secret == NULL ||
+      strcmp(oauth_response.secret, temporary_secret_state) != 0) {
+    fprintf(stderr,
+            "cauthflow redirect contained the wrong secret state (%s), "
+            "expected: (%s)\n",
+            oauth_response.secret == NULL ? "(NULL)" : oauth_response.secret,
+            temporary_secret_state);
+    exit(EXIT_FAILURE);
+  } else {
+    printf("\n"
+           "struct AuthenticationResponse oauth_response = {\n"
+           "  .scope=\"%s\",\n"
+           "  .secret=\"%s\",\n"
+           "  .code=\"%s\"\n"
+           "};\n",
+           oauth_response.scope, oauth_response.secret, oauth_response.code);
+  }
+
+  str_str.first = redirect_uri;
+  str_str.second = oauth_response.code;
+  return str_str;
 }

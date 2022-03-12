@@ -1,10 +1,10 @@
 get_filename_component(LIBRARY_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
 string(REPLACE " " "_" LIBRARY_NAME "${LIBRARY_NAME}")
 
-set(Header_Files "google_auth.h")
+set(Header_Files "open_browser.h")
 source_group("Header Files" FILES "${Header_Files}")
 
-set(Source_Files "google_auth.c")
+set(Source_Files "open_browser.c")
 source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
@@ -17,36 +17,12 @@ target_include_directories(
         "$<INSTALL_INTERFACE:include>"
 )
 
-find_path(RANDOMSTR_INCLUDE_DIRS "randomstr.h")
 find_path(C89STRINGUTILS_INCLUDE_DIRS "c89stringutils_string_extras.h")
 
 target_include_directories(
         "${LIBRARY_NAME}"
         PRIVATE
-        "${RANDOMSTR_INCLUDE_DIRS}"
         "${C89STRINGUTILS_INCLUDE_DIRS}"
-)
-
-#find_package(libcurl-simple-https CONFIG REQUIRED)
-#find_package(unofficial-parson CONFIG REQUIRED)
-#set(_libs "unofficial::parson::parson")
-set(_libs "")
-if (APPLE)
-  list(APPEND _libs "-framework CoreServices")
-endif (APPLE)
-
-target_link_libraries(
-        "${LIBRARY_NAME}"
-        PUBLIC
-        "${_libs}"
-        #"${PROJECT_NAME}"
-)
-target_link_libraries(
-        "${LIBRARY_NAME}"
-        PUBLIC
-        "${PROJECT_NAME}_utils"
-        "${PROJECT_NAME}_open_browser"
-        "${PROJECT_NAME}_configure"
 )
 
 set_target_properties(

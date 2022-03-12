@@ -2,6 +2,7 @@
 #include <greatest.h>
 #include <stdbool.h>
 
+#include <cauthflow_server.h>
 #include <google_auth.h>
 
 #ifdef _MSC_VER
@@ -17,7 +18,8 @@ typedef unsigned long num_type;
 
 TEST x_is_directory_should_be_true(void) {
   /* TODO: Actually test things */
-  get_google_auth(CLIENT_ID, CLIENT_SECRET, /*refresh_token*/ NULL);
+  get_google_auth(CLIENT_ID, CLIENT_SECRET, /*refresh_token*/ NULL,
+                  redirect_dance);
   ASSERT_EQ(0, 0);
   PASS();
 }

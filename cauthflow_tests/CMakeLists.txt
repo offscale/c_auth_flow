@@ -35,10 +35,12 @@ target_link_libraries(
         "${EXEC_NAME}"
         PRIVATE
         "${PROJECT_NAME}_compiler_flags"
-        "${PROJECT_NAME}_utils"
+        #"${PROJECT_NAME}_utils"
+        "${PROJECT_NAME}_configure"
+        "${PROJECT_NAME}_google_auth"
         "${PROJECT_NAME}"
         #"libcurl-simple-https"
-        "${PROJECT_NAME}_google_auth"
+        #"${PROJECT_NAME}_google_auth"
 )
 
 add_test(NAME "${EXEC_NAME}" COMMAND "${EXEC_NAME}")
