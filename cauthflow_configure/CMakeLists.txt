@@ -71,10 +71,15 @@ endif ()
 # Configure file (interpolate) #
 ################################
 
-configure_file("configure.h.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h" @ONLY)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+set(Header_File "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h")
+configure_package_config_file(
+        "configure.h.in" "${Header_File}"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
 
-set(Header_Files "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_configure.h")
-source_group("Header Files" FILES "${Header_Files}")
+source_group("Header Files" FILES "${Header_File}")
 
 add_library("${LIBRARY_NAME}" INTERFACE)
 
@@ -82,7 +87,7 @@ target_include_directories(
         "${LIBRARY_NAME}"
         INTERFACE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-        "$<INSTALL_INTERFACE:include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 set_target_properties(
@@ -95,7 +100,3 @@ set_target_properties(
 # setup the version numbering
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
-
-# install rules
-include(GNUInstallDirs)
-install(FILES ${Header_Files} TYPE "INCLUDE")

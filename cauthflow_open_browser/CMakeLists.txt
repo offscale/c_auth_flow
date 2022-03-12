@@ -8,12 +8,13 @@ source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
+include(GNUInstallDirs)
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-        "$<INSTALL_INTERFACE:include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 find_path(C89STRINGUTILS_INCLUDE_DIRS "c89stringutils_string_extras.h")
@@ -46,5 +47,4 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 
 # install rules
-include(GNUInstallDirs)
 install(FILES "${_export_file}" ${Header_Files} TYPE "INCLUDE")

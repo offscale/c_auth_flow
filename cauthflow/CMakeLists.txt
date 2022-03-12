@@ -8,12 +8,13 @@ source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
+include(GNUInstallDirs)
 target_include_directories(
         "${LIBRARY_NAME}"
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-        "$<INSTALL_INTERFACE:include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 ##########################
@@ -36,13 +37,6 @@ target_link_libraries(
         PRIVATE
         "${PROJECT_NAME}_google_auth"
         "${PROJECT_NAME}_compiler_flags"
-)
-
-target_include_directories(
-        "${LIBRARY_NAME}"
-        PRIVATE
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-        "$<INSTALL_INTERFACE:include>"
 )
 
 if (WIN32)
@@ -73,7 +67,6 @@ set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
 ###########
 
 # install rules
-include(GNUInstallDirs)
 set(installable_libs
         "${LIBRARY_NAME}" "${PROJECT_NAME}_utils"
         "${PROJECT_NAME}_google_auth" "${PROJECT_NAME}_open_browser"
