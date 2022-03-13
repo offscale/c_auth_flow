@@ -27,10 +27,6 @@ target_include_directories(
         "${C89STRINGUTILS_INCLUDE_DIRS}"
 )
 
-if (APPLE)
-  target_link_libraries("${LIBRARY_NAME}" PUBLIC "-framework CoreServices")
-endif (APPLE)
-
 target_link_libraries(
         "${LIBRARY_NAME}"
         PUBLIC

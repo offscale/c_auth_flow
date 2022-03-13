@@ -8,6 +8,10 @@ source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
+if (APPLE)
+    target_link_libraries("${LIBRARY_NAME}" PUBLIC "-framework CoreServices")
+endif (APPLE)
+
 include(GNUInstallDirs)
 target_include_directories(
         "${LIBRARY_NAME}"
