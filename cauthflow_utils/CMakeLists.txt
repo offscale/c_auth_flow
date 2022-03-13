@@ -53,4 +53,4 @@ set(_export_file "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}_export.h")
 generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
 # install rules
-install(FILES ${Header_Files} "${_export_file}" TYPE "INCLUDE")
+install(FILES "${_export_file}" ${Header_Files} TYPE "INCLUDE")
