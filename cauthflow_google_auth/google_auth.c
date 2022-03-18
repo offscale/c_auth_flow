@@ -21,11 +21,9 @@
 #include <json_common.h>
 #define RANDOMSTR_IMPLEMENTATION
 #include <randomstr.h>
-#undef RANDOMSTR_IMPLEMENTATION
 
 #define C89STRINGUTILS_IMPLEMENTATION
 #include <c89stringutils_string_extras.h>
-#undef C89STRINGUTILS_IMPLEMENTATION
 
 #include <open_browser.h>
 /*#include <cauthflow_server.h>*/

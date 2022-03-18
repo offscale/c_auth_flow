@@ -6,7 +6,13 @@ source_group("Header Files" FILES "${Header_Files}")
 set(Source_Files "open_browser.c")
 source_group("Source Files" FILES "${Source_Files}")
 
+option(OPEN_BROWSER "Open the browser (otherwise output URL to stdout)" 1)
+
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
+
+if (OPEN_BROWSER)
+    target_compile_definitions("${LIBRARY_NAME}" PUBLIC OPEN_BROWSER)
+endif (OPEN_BROWSER)
 
 if (APPLE)
     target_link_libraries("${LIBRARY_NAME}" PUBLIC "-framework CoreServices")

@@ -28,7 +28,9 @@
 #include "open_browser.h"
 
 void open_browser(const char *url) {
-#if defined(__linux) || defined(__linux__) || defined(linux)
+#ifndef OPEN_BROWSER
+  printf("Authenticate in your browser with:\n\t%s\n", url);
+#elif defined(__linux) || defined(__linux__) || defined(linux)
   /* On linux xdg-open is a command that opens the
    preferred application for the type of file or url.
    For more information use: man xdg-open on the
@@ -47,7 +49,7 @@ void open_browser(const char *url) {
     defined(__APPLE__) && defined(__MACH__)
   CFURLRef cf_url = CFURLCreateWithBytes(NULL,         /* allocator */
                                          (UInt8 *)url, /* URLBytes */
-                                         (signed long)strlen(url), /* length */
+                                         (long)strlen(url), /* length */
                                          kCFStringEncodingASCII, /* encoding */
                                          NULL                    /* baseURL */
   );

@@ -14,7 +14,6 @@
 typedef SSIZE_T ssize_t;
 #define PIPE_BUF 512
 #define strdup _strdup
-#define read _read
 #define strerror_r(errno, buf, len) strerror_s(buf, len, errno)
 #define strtok_r strtok_s
 #define malloc_usable_size _msize
@@ -84,7 +83,7 @@ const char responseErr[] = "HTTP/1.0 400 Bad Request\r\n"
                            "Content-Type: text/plain\r\n"
                            "\r\n"
                            "Bad Request\r\n";
-const static char STOP_ON_STARTSWITH[] = "GET " EXPECTED_PATH;
+static const char STOP_ON_STARTSWITH[] = "GET " EXPECTED_PATH;
 
 int write_and_close_socket(int client_fd, const char responseMessage[],
                            size_t messageSize) {
@@ -209,11 +208,7 @@ int serve(char **response) {
 
     /* memset(pipe_buf, 0, PIPE_BUF); */
     do {
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
       bytes = recv(client_fd, pipe_buf, PIPE_BUF, 0);
-#else
-      bytes = read(client_fd, pipe_buf, PIPE_BUF);
-#endif
       if (bytes == -1) {
         char error_s[BUFSIZ];
         strerror_r(code, error_s, BUFSIZ);
@@ -238,6 +233,12 @@ int serve(char **response) {
         memcpy(*response + total_bytes, pipe_buf, bytes);
         total_bytes += bytes;
         current_size = total_bytes;
+      } else {
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+          STD_ERROR_HANDLER(closesocket(sockfd));
+#else
+          STD_ERROR_HANDLER(close(sockfd));
+#endif
       }
       if (bytes < PIPE_BUF)
         break;
