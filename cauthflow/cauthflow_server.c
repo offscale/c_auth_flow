@@ -140,7 +140,7 @@ int serve(char **response) {
   hint.ai_flags = AI_PASSIVE
 #if !defined(_WIN32) && !defined(__WIN32__) && !defined(__WINDOWS__)
                   | SOCK_NONBLOCK
-#endif
+#endif /* !defined(_WIN32) && !defined(__WIN32__) && !defined(__WINDOWS__) */
       ;
   code = getaddrinfo(NULL, PORT_TO_BIND_S, &hint, &info);
   if (code != 0) {

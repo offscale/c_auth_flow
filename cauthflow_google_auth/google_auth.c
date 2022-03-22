@@ -120,18 +120,22 @@ struct StrStr auth_flow_user_approval(
   const char *temporary_secret_state = generate_random_string(10);
   const char *scope = /*"openid"
                       "%20"
-                      "https://www.googleapis.com/auth/cloud-platform"
+                      "https%3A//www.googleapis.com/auth/cloud-platform"
                       "%20"
-                      "https://www.googleapis.com/auth/cloudplatformprojects"
+                      "https%3A//www.googleapis.com/auth/cloudplatformprojects"
                       "%20"
-                      "https://www.googleapis.com/auth/devstorage.read_write"*/
+                      "https%3A//www.googleapis.com/auth/devstorage.read_write"*/
       "openid"
       "%20"
-      "https://www.googleapis.com/auth/userinfo.email"
+      "https%3A//www.googleapis.com/auth/userinfo.email"
       "%20"
-      "https://www.googleapis.com/auth/cloud-platform"
+      "https%3A//www.googleapis.com/auth/cloud-platform"
       "%20"
-      "https://www.googleapis.com/auth/accounts.reauth";
+      "https%3A//www.googleapis.com/auth/compute"
+      "%20"
+      "https%3A//www.googleapis.com/auth/devstorage.full_control"
+      "%20"
+      "https%3A//www.googleapis.com/auth/accounts.reauth";
 
   char *url;
   CURLU *urlp = curl_url();
