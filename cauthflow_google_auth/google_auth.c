@@ -19,10 +19,11 @@
 #include <parson.h>
 
 #include <json_common.h>
+
 #define RANDOMSTR_IMPLEMENTATION
+#define RANDOMSTR_CHARSET "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 #include <randomstr.h>
 
-#define C89STRINGUTILS_IMPLEMENTATION
 #include <c89stringutils_string_extras.h>
 
 #include <open_browser.h>
