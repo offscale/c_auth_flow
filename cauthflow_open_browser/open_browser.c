@@ -47,9 +47,9 @@ void open_browser(const char *url) {
 #else
 #if defined(macintosh) || defined(Macintosh) ||                                \
     defined(__APPLE__) && defined(__MACH__)
-  CFURLRef cf_url = CFURLCreateWithBytes(NULL,         /* allocator */
-                                         (UInt8 *)url, /* URLBytes */
-                                         (long)strlen(url), /* length */
+  CFURLRef cf_url = CFURLCreateWithBytes(NULL,                   /* allocator */
+                                         (UInt8 *)url,           /* URLBytes */
+                                         (long)strlen(url),      /* length */
                                          kCFStringEncodingASCII, /* encoding */
                                          NULL                    /* baseURL */
   );

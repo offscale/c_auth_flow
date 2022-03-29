@@ -235,9 +235,9 @@ int serve(char **response) {
         current_size = total_bytes;
       } else {
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-          STD_ERROR_HANDLER(closesocket(sockfd));
+        STD_ERROR_HANDLER(closesocket(sockfd));
 #else
-          STD_ERROR_HANDLER(close(sockfd));
+        STD_ERROR_HANDLER(close(sockfd));
 #endif
       }
       if (bytes < PIPE_BUF)

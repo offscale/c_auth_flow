@@ -21,7 +21,8 @@
 #include <json_common.h>
 
 #define RANDOMSTR_IMPLEMENTATION
-#define RANDOMSTR_CHARSET "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+#define RANDOMSTR_CHARSET                                                      \
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 #include <randomstr.h>
 
 #include <c89stringutils_string_extras.h>
@@ -119,13 +120,14 @@ struct StrStr auth_flow_user_approval(
   const char *redirect_uri =
       "http://" SERVER_HOST ":" PORT_TO_BIND_S EXPECTED_PATH;
   const char *temporary_secret_state = generate_random_string(10);
-  const char *scope = /*"openid"
-                      "%20"
-                      "https%3A//www.googleapis.com/auth/cloud-platform"
-                      "%20"
-                      "https%3A//www.googleapis.com/auth/cloudplatformprojects"
-                      "%20"
-                      "https%3A//www.googleapis.com/auth/devstorage.read_write"*/
+  const char
+      *scope = /*"openid"
+               "%20"
+               "https%3A//www.googleapis.com/auth/cloud-platform"
+               "%20"
+               "https%3A//www.googleapis.com/auth/cloudplatformprojects"
+               "%20"
+               "https%3A//www.googleapis.com/auth/devstorage.read_write"*/
       "openid"
       "%20"
       "https%3A//www.googleapis.com/auth/userinfo.email"
@@ -133,6 +135,8 @@ struct StrStr auth_flow_user_approval(
       "https%3A//www.googleapis.com/auth/cloud-platform"
       "%20"
       "https%3A//www.googleapis.com/auth/compute"
+      "%20"
+      "https%3A//www.googleapis.com/auth/pubsub"
       "%20"
       "https%3A//www.googleapis.com/auth/devstorage.full_control"
       "%20"
