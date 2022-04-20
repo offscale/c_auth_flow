@@ -25,6 +25,7 @@
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 #include <randomstr.h>
 
+#define C89STRINGUTILS_IMPLEMENTATION
 #include <c89stringutils_string_extras.h>
 
 #include <open_browser.h>
@@ -136,8 +137,8 @@ struct StrStr auth_flow_user_approval(
       "%20"
       "https%3A//www.googleapis.com/auth/compute"
       "%20"
-      "https%3A//www.googleapis.com/auth/pubsub"
-      "%20"
+      /*"https%3A//www.googleapis.com/auth/pubsub"
+      "%20"*/
       "https%3A//www.googleapis.com/auth/devstorage.full_control"
       "%20"
       "https%3A//www.googleapis.com/auth/accounts.reauth";
