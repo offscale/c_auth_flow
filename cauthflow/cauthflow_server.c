@@ -138,7 +138,7 @@ int serve(char **response) {
   hint.ai_family = AF_INET;
   hint.ai_socktype = SOCK_STREAM;
   hint.ai_flags = AI_PASSIVE
-#if !defined(_WIN32) && !defined(__WIN32__) && !defined(__WINDOWS__)
+#if !defined(_WIN32) && !defined(__WIN32__) && !defined(__WINDOWS__) && !defined(__linux) && !defined(__linux__) && !defined(linux)
                   | SOCK_NONBLOCK
 #endif /* !defined(_WIN32) && !defined(__WIN32__) && !defined(__WINDOWS__) */
       ;
@@ -205,6 +205,8 @@ int serve(char **response) {
       continue;
     }
     puts("Running server on http://" SERVER_HOST ":" PORT_TO_BIND_S);
+
+    /* TODO: Give function callback and call it here */
 
     /* memset(pipe_buf, 0, PIPE_BUF); */
     do {
