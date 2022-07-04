@@ -99,8 +99,8 @@ set_target_properties(
 )
 
 # setup the version numbering
-set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "1.0.0")
-set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "1")
+set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "${${PROJECT_NAME}_VERSION}")
+set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}")
 
 # install rules
 install(FILES "${Header_File}" TYPE "INCLUDE")
