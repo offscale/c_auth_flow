@@ -8,7 +8,7 @@ source_group("Source Files" FILES "${Source_Files}")
 
 add_library("${LIBRARY_NAME}" "${LIBRARY_TYPE_FLAG}" "${Header_Files}" "${Source_Files}")
 
-find_package(unofficial-parson CONFIG REQUIRED)
+find_package(parson CONFIG REQUIRED)
 find_package(libcurl-simple-https CONFIG REQUIRED)
 
 if (MSVC)
@@ -24,7 +24,7 @@ target_link_libraries(
         PUBLIC
         "${CURL_LINK_LIBRARIES}"
         "libcurl-simple-https"
-        "unofficial::parson::parson"
+        "parson::parson"
 )
 
 target_link_libraries(
